@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace App2NightAPI.Controllers
 {
@@ -39,19 +38,15 @@ namespace App2NightAPI.Controllers
         {
             try
             {
-                var party = new Party
-                {
-                    Name = value.PartyName,
-                    Date = DateTime.Today,
-                    Host = _dbContext.UserItems.First<User>(p => p.UserId == Guid.Parse("31c0fe14-5964-439f-a877-08d3f68dcb0c"))
-                };
+                var party = _mapPartyToModel(value); 
 
                 bool validated = TryValidateModel(party);
 
                 if (validated)
                 {
                     _dbContext.PartyItems.Add(party);
-                    _dbContext.UserItems.First<User>(p => p.UserId == Guid.Parse("31c0fe14-5964-439f-a877-08d3f68dcb0c")).PartyHostedByUser.Add(party);
+                    _dbContext.UserItems.First<User>(p => p.UserId == party.Host.UserId).PartyHostedByUser.Add(party);
+                    //_dbContext.UserItems.First<User>(p => p.UserId == Guid.Parse("31c0fe14-5964-439f-a877-08d3f68dcb0c")).PartyHostedByUser.Add(party);
                     _dbContext.SaveChanges();
                     return Created("", party.PartId);
                 }
@@ -66,6 +61,21 @@ namespace App2NightAPI.Controllers
             }
         }
 
+        private Party _mapPartyToModel(CreateParty value)
+        {
+            return new Party
+            {
+                PartyName = value.PartyName,
+                PartyDate = value.PartyDate,
+                CreationDate = DateTime.Today,
+                MusicGenre = value.MusicGenre,
+                Location = value.Location,
+                PartyType = value.PartyType,
+                Host = _dbContext.UserItems.First<User>(p => p.UserId == value.Host.UserId),
+                //Host = _dbContext.UserItems.First<User>(p => p.UserId == Guid.Parse("31c0fe14-5964-439f-a877-08d3f68dcb0c"))
+                Description = value.Description
+            };
+        }
 
         // PUT /api/Party
         /// <summary>
@@ -80,8 +90,26 @@ namespace App2NightAPI.Controllers
         [HttpPut("id={id}")]
         public ActionResult Modify(Guid? id, [FromBody]CreateParty value)
         {
+            try
+            {
+                var party = _mapPartyToModel(value);
 
-            return Ok();
+                bool validated = TryValidateModel(party);
+                if (validated)
+                {
+                    _dbContext.PartyItems.Update(party);
+                    _dbContext.SaveChanges();
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest(new CreateParty());
+                }
+            }
+            catch(Exception)
+            {
+                return BadRequest();
+            }
         }
 
 
@@ -97,33 +125,33 @@ namespace App2NightAPI.Controllers
         [HttpDelete("id={id}")]
         public ActionResult Delete(Guid? id)
         {
-            //Guid partyId;
-            //try
-            //{
+            Guid partyId;
+            try
+            {
 
-            //   if(Guid.TryParse(id.ToString(), out partyId))
-            //    {
-            //        Party selectedParty = _dbContext.PartyItems.First<Party>(p => p.PartId == partyId);
-            //        if(selectedParty != null)
-            //        {
-            //            _dbContext.PartyItems.Remove(selectedParty);
-            //            _dbContext.SaveChanges();
-            //        }
-            //        else
-            //        {
-            //            //TODO ELSE
-            //        }
-            //    }
-            //    else
-            //    {
-            //        return BadRequest();
-            //    }
+                if (Guid.TryParse(id.ToString(), out partyId))
+                {
+                    Party selectedParty = _dbContext.PartyItems.First<Party>(p => p.PartId == partyId);
+                    if (selectedParty != null)
+                    {
+                        _dbContext.PartyItems.Remove(selectedParty);
+                        _dbContext.SaveChanges();
+                    }
+                    else
+                    {
+                        //TODO ELSE
+                    }
+                }
+                else
+                {
+                    return BadRequest();
+                }
 
-            //}
-            //catch (Exception ex)
-            //{
-            //    return BadRequest();
-            //}
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
             return Ok();
         }
     }

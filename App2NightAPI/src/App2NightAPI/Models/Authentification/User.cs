@@ -15,6 +15,7 @@ namespace App2NightAPI.Models.Authentification
         public Guid UserId { get; set; }
         public string Username { get; set; }
         public string Password { get; set; }
+        public Location Location { get; set; }
 
         public List<Party> PartyHostedByUser { get; set; }
 
