@@ -1,0 +1,5 @@
+﻿################################################################################
+# Diese .gitignore-Datei wurde von Microsoft(R) Visual Studio automatisch erstellt.
+################################################################################
+
+/App2NightAPI/src/App2NightAPI/appsettings.json
