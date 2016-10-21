@@ -45,8 +45,9 @@ namespace App2NightAPI.Controllers
                 if (validated)
                 {
                     _dbContext.PartyItems.Add(party);
-                    _dbContext.UserItems.First<User>(p => p.UserId == party.Host.UserId).PartyHostedByUser.Add(party);
-                    //_dbContext.UserItems.First<User>(p => p.UserId == Guid.Parse("31c0fe14-5964-439f-a877-08d3f68dcb0c")).PartyHostedByUser.Add(party);
+                    //_dbContext.UserItems.First<User>(p => p.UserId == party.Host.UserId).PartyHostedByUser.Add(party);
+                    _dbContext.UserItems.First<User>(p => p.UserId == Guid.Parse("1bd535c8-f90b-4a25-5b26-08d3f9b43b33")).PartyHostedByUser.Add(party);
+                    //_dbContext.LocationItems.Add(party.Location);
                     _dbContext.SaveChanges();
                     return Created("", party.PartId);
                 }
@@ -71,8 +72,8 @@ namespace App2NightAPI.Controllers
                 MusicGenre = value.MusicGenre,
                 Location = value.Location,
                 PartyType = value.PartyType,
-                Host = _dbContext.UserItems.First<User>(p => p.UserId == value.Host.UserId),
-                //Host = _dbContext.UserItems.First<User>(p => p.UserId == Guid.Parse("31c0fe14-5964-439f-a877-08d3f68dcb0c"))
+                //Host = _dbContext.UserItems.First<User>(p => p.UserId == value.Host.UserId),
+                Host = _dbContext.UserItems.First<User>(p => p.UserId == Guid.Parse("1bd535c8-f90b-4a25-5b26-08d3f9b43b33")),
                 Description = value.Description
             };
         }
@@ -95,6 +96,8 @@ namespace App2NightAPI.Controllers
                 var party = _mapPartyToModel(value);
 
                 bool validated = TryValidateModel(party);
+                party.PartId = Guid.Parse(id.ToString());
+
                 if (validated)
                 {
                     _dbContext.PartyItems.Update(party);

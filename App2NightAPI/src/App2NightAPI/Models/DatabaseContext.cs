@@ -11,6 +11,7 @@ namespace App2NightAPI.Models
     {
         public DbSet<Party> PartyItems { get; set; }
         public DbSet<User> UserItems { get; set; }
+        public DbSet<Location> LocationItems { get; set; }
         public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options)
         {
             Database.EnsureCreated();

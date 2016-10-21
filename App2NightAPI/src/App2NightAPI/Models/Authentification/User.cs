@@ -13,7 +13,9 @@ namespace App2NightAPI.Models.Authentification
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public Guid UserId { get; set; }
+        [Required]
         public string Username { get; set; }
+        [Required]
         public string Password { get; set; }
         public Location Location { get; set; }
 

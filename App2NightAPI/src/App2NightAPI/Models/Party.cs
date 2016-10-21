@@ -8,6 +8,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using App2NightAPI.Models.Authentification;
 using App2NightAPI.Models.Enum;
 using App2NightAPI.Models.REST_Models;
+using Newtonsoft.Json;
 
 namespace App2NightAPI.Models
 {
@@ -16,12 +17,13 @@ namespace App2NightAPI.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public Guid PartId { get; set; }
-        [Required]
-        public string Name { get; set; }
+        [JsonIgnore]
+        public DateTime CreationDate { get; set; }
         [Required]
         public DateTime Date { get; set; }
         public int Price { get; set; }
-        
+        [Required]
+        public User Host { get; set; }
         //public DateTime CreationDate { get; set; }
         //[Required]
         //public User Host { get; set; }

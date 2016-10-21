@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using App2NightAPI.Models;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.Swagger.Model;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace App2NightAPI
 {
@@ -37,27 +38,25 @@ namespace App2NightAPI
         // This method gets called by the runtime. Use this method to add services to the container
         public void ConfigureServices(IServiceCollection services)
         {
-            //var pathToDoc = Configuration["Swagger:Path"];
+            
             // Add framework services.
             services.AddApplicationInsightsTelemetry(Configuration);
 
             services.AddMvc();
 
-            services.AddSwaggerGen();
+            services.AddSwaggerGen(options =>
+            {
+                options.SingleApiVersion(new Info
+                {
+                    Version = "v1",
+                    Title = "App2Night API",
+                    Description = "",
+                    TermsOfService = "None"
+                });
+                var basePath = PlatformServices.Default.Application.ApplicationBasePath;
+                options.IncludeXmlComments(basePath+ "\\App2NightAPI.xml");
+            });
 
-            //services.AddSwaggerGen(options =>
-            //{
-            //    options.SingleApiVersion(new Info
-            //    {
-            //        Version = "v1",
-            //        Title = "App2Night API",
-            //        Description = "",
-            //        TermsOfService = "None"
-            //    });
-            //    options.IncludeXmlComments(pathToDoc);
-            //    options.DescribeAllEnumsAsStrings();
-            //});
-            
             services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Database")));
         }
 

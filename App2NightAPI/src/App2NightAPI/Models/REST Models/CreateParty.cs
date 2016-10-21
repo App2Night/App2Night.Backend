@@ -14,15 +14,12 @@ namespace App2NightAPI.Models.REST_Models
         public string PartyName { get; set; }
         [Required]
         public DateTime PartyDate { get; set; }
-        public DateTime CreationDate { get; set; }
         [Required]
         public MusicGenre MusicGenre { get; set; }
         [Required]
         public Location Location { get; set; }
         [Required]
         public PartyType PartyType { get; set; }
-        [Required]
-        public User Host { get; set; }
         [Required]
         public string Description { get; set; }
     }
