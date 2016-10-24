@@ -46,6 +46,7 @@ namespace App2NightAPI.Controllers
             }
         }
 
+        // GET api/Party
         /// <summary>
         /// Get a Party by Id
         /// </summary>

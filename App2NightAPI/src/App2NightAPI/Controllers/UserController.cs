@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
 
 namespace App2NightAPI.Controllers
 {
@@ -22,6 +23,38 @@ namespace App2NightAPI.Controllers
         [HttpGet]
         public IEnumerable<string> Get()
         {
+            //try
+            //{
+            //    Guid userId;
+            //    if (Guid.TryParse(id.ToString(), out userId))
+            //    {
+            //        var user = _dbContext.UserItems
+            //            .Include(l => l.Location)
+            //            .Include(u => u.PartyHostedByUser)
+            //            .First<User>(u => u.UserId == id);
+
+            //        if (user != null)
+            //        {
+            //            JObject userJson = JObject.FromObject(user);
+            //            foreach (var p in user.PartyHostedByUser)
+            //            {
+            //                userJson.Add("partId", p.PartId);
+            //            }
+            //        }
+            //        else
+            //        {
+            //            //return BadRequest();
+            //        }
+            //    }
+            //    else
+            //    {
+            //        //return BadRequest();
+            //    }
+            //}
+            //catch (Exception)
+            //{
+            //    //return BadRequest();
+            //}
             return new string[] { "user..."};
         }
 
