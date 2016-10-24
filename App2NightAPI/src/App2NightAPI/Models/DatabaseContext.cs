@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using App2NightAPI.Models.Authentification;
-
 namespace App2NightAPI.Models
 {
     public class DatabaseContext : DbContext
@@ -24,8 +23,6 @@ namespace App2NightAPI.Models
             //Relationen zwischen DBs festlegen
             //Suchen nach ASPNETCORE Entity Framework
 
-
         }
-
     }
 }

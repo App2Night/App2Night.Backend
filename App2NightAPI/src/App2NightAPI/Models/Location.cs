@@ -24,5 +24,6 @@ namespace App2NightAPI.Models
         public int Zipcode { get; set; }
         public long Latitude { get; set; }
         public long Longitude { get; set; }
+        
     }
 }

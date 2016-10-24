@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace App2NightAPI.Controllers
 {
@@ -28,7 +29,51 @@ namespace App2NightAPI.Controllers
         [HttpGet]
         public IEnumerable<Party> Get()
         {
-            return _dbContext.PartyItems.Take(15);
+            try
+            {
+
+                var pa = _dbContext.PartyItems
+                    .Include(p => p.Location)
+                    .Include(p => p.Host)
+                        .ThenInclude(h => h.Location)
+                    .Take(15);
+
+                return pa;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Get a Party by Id
+        /// </summary>
+        /// <remarks>
+        /// This function will load a party by the given PartyId.
+        /// </remarks>
+        /// <param name="id">Party Id</param>
+        /// <returns>Http Status Code 200 (Ok) and the Party Object, or Http Status Code 400 (Bad Request)</returns>
+        /// <response code="200">Ok</response>
+        /// <response code="400">Bad Request</response>
+        [ProducesResponseType(typeof(Party), 200)]
+        [HttpGet("id={id}")]
+        public ActionResult GetPartyById(Guid? id)
+        {
+            try
+            {
+                var singleParty = _dbContext.PartyItems
+                    .Include(p => p.Location)
+                    .Include(p => p.Host)
+                        .ThenInclude(h => h.Location)
+                    .First<Party>(p => p.PartId == id);
+
+                return Ok(singleParty);
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
         }
 
         // POST api/Party
@@ -48,7 +93,7 @@ namespace App2NightAPI.Controllers
         {
             try
             {
-                var party = _mapPartyToModel(value); 
+                var party = _mapPartyToModel(value);
 
                 bool validated = TryValidateModel(party);
 
@@ -91,7 +136,7 @@ namespace App2NightAPI.Controllers
                 var party = _mapPartyToModel(value);
                 party.PartId = Guid.Parse(id.ToString());
                 party.Location.LocationId = _dbContext.PartyItems.Where(p => p.PartId == party.PartId).Select(p => new { p.Location.LocationId }).FirstOrDefault().LocationId;
-                
+
                 bool validated = TryValidateModel(party);
 
                 if (validated)
@@ -105,7 +150,7 @@ namespace App2NightAPI.Controllers
                     return BadRequest(new CreateParty());
                 }
             }
-            catch(Exception)
+            catch (Exception)
             {
                 return BadRequest();
             }
@@ -131,7 +176,7 @@ namespace App2NightAPI.Controllers
         /// Deletes a Party
         /// </summary>
         /// <remarks>
-        /// This function will delete a party from the database.
+        /// This function will delete a party and the related location from the database.
         /// </remarks>
         /// <param name="id">Party Id (Passed in the URL)</param>
         /// <returns>Http Status Code 200 (Ok), or Http Status Code 400 (Bad Request)</returns>
@@ -145,10 +190,14 @@ namespace App2NightAPI.Controllers
             {
                 if (Guid.TryParse(id.ToString(), out partyId))
                 {
-                    Party selectedParty = _dbContext.PartyItems.First<Party>(p => p.PartId == partyId);
+                    Party selectedParty = _dbContext.PartyItems
+                        .Include(p => p.Location)
+                        .First<Party>(p => p.PartId == partyId);
+
                     if (selectedParty != null)
                     {
-                        _dbContext.PartyItems.Remove(selectedParty);
+                        _dbContext.Entry(selectedParty).State = EntityState.Deleted;
+                        _dbContext.Entry(selectedParty.Location).State = EntityState.Deleted;
                         _dbContext.SaveChanges();
                     }
                     else
@@ -161,7 +210,7 @@ namespace App2NightAPI.Controllers
                     return BadRequest();
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return BadRequest();
             }
