@@ -23,7 +23,7 @@ namespace App2NightAPI.Controllers
         /// Get Partys
         /// </summary>
         /// <remarks>
-        /// This function will return 15 partys from the database (at the moment!).
+        /// This function will return 15 partys from the database (at the moment!) where the date is today or in futre.
         /// </remarks>
         /// <returns></returns>
         [HttpGet]
@@ -31,8 +31,8 @@ namespace App2NightAPI.Controllers
         {
             try
             {
-
                 var pa = _dbContext.PartyItems
+                    .Where(p => p.PartyDate >= DateTime.Today)
                     .Include(p => p.Location)
                     .Include(p => p.Host)
                         .ThenInclude(h => h.Location)
@@ -73,7 +73,7 @@ namespace App2NightAPI.Controllers
             }
             catch (Exception)
             {
-                return BadRequest();
+                return NotFound("Party not found.");
             }
         }
 
@@ -94,19 +94,28 @@ namespace App2NightAPI.Controllers
         {
             try
             {
-                var party = _mapPartyToModel(value);
-
-                bool validated = TryValidateModel(party);
-
-                if (validated)
+                //Check if Party Date is today or in future
+                if (value.PartyDate >= DateTime.Today)
                 {
-                    _dbContext.PartyItems.Add(party);
-                    _dbContext.UserItems.First<User>(p => p.UserId == Guid.Parse("1bd535c8-f90b-4a25-5b26-08d3f9b43b33")).PartyHostedByUser.Add(party);
-                    _dbContext.SaveChanges();
-                    return Created("", party.PartId);
+                    var party = _mapPartyToModel(value);
+
+                    bool validated = TryValidateModel(party);
+
+                    if (validated)
+                    {
+                        _dbContext.PartyItems.Add(party);
+                        _dbContext.UserItems.First<User>(p => p.UserId == Guid.Parse("1bd535c8-f90b-4a25-5b26-08d3f9b43b33")).PartyHostedByUser.Add(party);
+                        _dbContext.SaveChanges();
+                        return Created("", party.PartId);
+                    }
+                    else
+                    {
+                        return BadRequest(new CreateParty());
+                    }
                 }
                 else
                 {
+                    //Party Date is the past
                     return BadRequest(new CreateParty());
                 }
             }
@@ -134,42 +143,53 @@ namespace App2NightAPI.Controllers
         {
             try
             {
-                var party = _mapPartyToModel(value);
-                party.PartId = Guid.Parse(id.ToString());
-                party.Location.LocationId = _dbContext.PartyItems.Where(p => p.PartId == party.PartId).Select(p => new { p.Location.LocationId }).FirstOrDefault().LocationId;
-
-                bool validated = TryValidateModel(party);
-
-                if (validated)
+                //Check if Party Id is valid
+                if (!Validator.IsGuidValid(id.ToString()))
                 {
-                    _dbContext.PartyItems.Update(party);
-                    _dbContext.SaveChanges();
-                    return Ok();
+                    return BadRequest("Party ID is not valid.");
                 }
                 else
                 {
-                    return BadRequest(new CreateParty());
+                    //Check if Party Date is toady or in future
+                    if (value.PartyDate <= DateTime.Today)
+                    {
+                        //Party Date is not today or in future
+                        return BadRequest("Party have to be in the future.");
+                    }
+                    else
+                    {
+                        var party = _mapPartyToModel(value);
+                        party.PartId = Guid.Parse(id.ToString());
+
+                        //Check if Party Element exists in the databse.
+                        int count = _dbContext.PartyItems.Count(p => p.PartId == id);
+                        if (count != 1)
+                        {
+                            //Party contains not in the databse.
+                            return NotFound("Party not found.");
+                        }
+                        else
+                        {
+                            party.Location.LocationId = _dbContext.PartyItems.Where(p => p.PartId == party.PartId).Select(p => new { p.Location.LocationId }).FirstOrDefault().LocationId;
+
+                            if (!TryValidateModel(party))
+                            {
+                                return BadRequest(new CreateParty());
+                            }
+                            else
+                            {
+                                _dbContext.PartyItems.Update(party);
+                                _dbContext.SaveChanges();
+                                return Ok();
+                            }
+                        }
+                    }
                 }
             }
             catch (Exception)
             {
                 return BadRequest();
             }
-        }
-
-        private Party _mapPartyToModel(CreateParty value)
-        {
-            return new Party
-            {
-                PartyName = value.PartyName,
-                PartyDate = value.PartyDate,
-                CreationDate = DateTime.Today,
-                MusicGenre = value.MusicGenre,
-                Location = value.Location,
-                PartyType = value.PartyType,
-                Host = _dbContext.UserItems.First<User>(p => p.UserId == Guid.Parse("1bd535c8-f90b-4a25-5b26-08d3f9b43b33")),
-                Description = value.Description
-            };
         }
 
         // DELETE /api/Party
@@ -197,9 +217,20 @@ namespace App2NightAPI.Controllers
 
                     if (selectedParty != null)
                     {
-                        _dbContext.Entry(selectedParty).State = EntityState.Deleted;
-                        _dbContext.Entry(selectedParty.Location).State = EntityState.Deleted;
-                        _dbContext.SaveChanges();
+                        //Check if Party Datum is in future
+                        if(selectedParty.PartyDate > DateTime.Now)
+                        {
+                            //Delete from Database
+                            _dbContext.Entry(selectedParty).State = EntityState.Deleted;
+                            _dbContext.Entry(selectedParty.Location).State = EntityState.Deleted;
+                            _dbContext.SaveChanges();
+                        }
+                        else if(selectedParty.PartyDate < DateTime.Now)
+                        {
+                            //Party is in the past
+                            //Can't delete
+                            return BadRequest("Can't delete a party with date in the past.");
+                        }
                     }
                     else
                     {
@@ -217,5 +248,22 @@ namespace App2NightAPI.Controllers
             }
             return Ok();
         }
+
+        #region Help Functions
+        private Party _mapPartyToModel(CreateParty value)
+        {
+            return new Party
+            {
+                PartyName = value.PartyName,
+                PartyDate = value.PartyDate,
+                CreationDate = DateTime.Today,
+                MusicGenre = value.MusicGenre,
+                Location = value.Location,
+                PartyType = value.PartyType,
+                Host = _dbContext.UserItems.First<User>(p => p.UserId == Guid.Parse("1bd535c8-f90b-4a25-5b26-08d3f9b43b33")),
+                Description = value.Description
+            };
+        }
+        #endregion
     }
 }
