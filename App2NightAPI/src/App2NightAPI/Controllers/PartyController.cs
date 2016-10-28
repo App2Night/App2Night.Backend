@@ -54,9 +54,10 @@ namespace App2NightAPI.Controllers
         /// This function will load a party by the given PartyId.
         /// </remarks>
         /// <param name="id">Party Id</param>
-        /// <returns>Http Status Code 200 (Ok) and the Party Object, or Http Status Code 400 (Bad Request)</returns>
+        /// <returns>Http Status Code 200 (Ok) and the Party Object, or Http Status Code 400 (Bad Request), or Http Status Code 404 (Not Found) if Party ID don't exists.</returns>
         /// <response code="200">Ok</response>
         /// <response code="400">Bad Request</response>
+        /// <response code="404">Not Found</response>
         [ProducesResponseType(typeof(Party), 200)]
         [HttpGet("id={id}")]
         public ActionResult GetPartyById(Guid? id)
@@ -95,28 +96,27 @@ namespace App2NightAPI.Controllers
             try
             {
                 //Check if Party Date is today or in future
-                if (value.PartyDate >= DateTime.Today)
+                if (value.PartyDate <= DateTime.Today)
+                {
+                    //Party Date is the past
+                    return BadRequest(new CreateParty());
+                }
+                else
                 {
                     var party = _mapPartyToModel(value);
 
-                    bool validated = TryValidateModel(party);
-
-                    if (validated)
+                    if(!TryValidateModel(party))
+                    {
+                        //Party Model is not valid!
+                        return BadRequest(new CreateParty());
+                    }
+                    else
                     {
                         _dbContext.PartyItems.Add(party);
                         _dbContext.UserItems.First<User>(p => p.UserId == Guid.Parse("1bd535c8-f90b-4a25-5b26-08d3f9b43b33")).PartyHostedByUser.Add(party);
                         _dbContext.SaveChanges();
                         return Created("", party.PartId);
                     }
-                    else
-                    {
-                        return BadRequest(new CreateParty());
-                    }
-                }
-                else
-                {
-                    //Party Date is the past
-                    return BadRequest(new CreateParty());
                 }
             }
             catch (Exception)
@@ -134,9 +134,10 @@ namespace App2NightAPI.Controllers
         /// </remarks>
         /// <param name="id">Party Id (Passed in the URL)</param>
         /// <param name="value">JSON Body</param>
-        /// <returns>Http Status Code 200 (Ok), or Http Status Code 400 (Bad Request)</returns>
+        /// <returns>Http Status Code 200 (Ok), or Http Status Code 400 (Bad Request), or Http Status Code 404 (Not Found) if Party ID don't exists.</returns>
         /// <response code="200">Ok</response>
         /// <response code="400">Bad Request</response>
+        /// <response code="404">Not Found</response>
         [ProducesResponseType(typeof(CreateParty), 400)]
         [HttpPut("id={id}")]
         public ActionResult Modify(Guid? id, [FromBody]CreateParty value)
@@ -200,49 +201,59 @@ namespace App2NightAPI.Controllers
         /// This function will delete a party and the related location from the database.
         /// </remarks>
         /// <param name="id">Party Id (Passed in the URL)</param>
-        /// <returns>Http Status Code 200 (Ok), or Http Status Code 400 (Bad Request)</returns>
+        /// <returns>Http Status Code 200 (Ok), or Http Status Code 400 (Bad Request), or Http Status Code 404 (Not Found) if Party ID don't exists.</returns>
         /// <response code="200">Ok</response>
         /// <response code="400">Bad Request</response>
+        /// <response code="404"> Not Found</response>
         [HttpDelete("id={id}")]
         public ActionResult Delete(Guid? id)
         {
             Guid partyId;
             try
             {
-                if (Guid.TryParse(id.ToString(), out partyId))
+                if (!Guid.TryParse(id.ToString(), out partyId))
                 {
-                    Party selectedParty = _dbContext.PartyItems
-                        .Include(p => p.Location)
-                        .First<Party>(p => p.PartId == partyId);
-
-                    if (selectedParty != null)
+                    //Can't parse Party ID
+                    return BadRequest();
+                }
+                else
+                {
+                    int count = _dbContext.PartyItems.Count(p => p.PartId == partyId);
+                    if (count != 1)
                     {
-                        //Check if Party Datum is in future
-                        if(selectedParty.PartyDate > DateTime.Now)
-                        {
-                            //Delete from Database
-                            _dbContext.Entry(selectedParty).State = EntityState.Deleted;
-                            _dbContext.Entry(selectedParty.Location).State = EntityState.Deleted;
-                            _dbContext.SaveChanges();
-                        }
-                        else if(selectedParty.PartyDate < DateTime.Now)
+                        return NotFound("Party not found.");
+                    }
+                    else
+                    {
+                        Party selectedParty = _dbContext.PartyItems
+                                 .Include(p => p.Location)
+                                 .First<Party>(p => p.PartId == partyId);
+
+                        if (selectedParty == null)
                         {
                             //Party is in the past
                             //Can't delete
                             return BadRequest("Can't delete a party with date in the past.");
                         }
+                        else if (selectedParty.PartyDate < DateTime.Now)
+                        {
+                            //Check if Party Datum is in future
+                            if (selectedParty.PartyDate < DateTime.Now)
+                            {
+                                return BadRequest();
+                            }
+                            else
+                            {
+                                //Delete from Database
+                                _dbContext.Entry(selectedParty).State = EntityState.Deleted;
+                                _dbContext.Entry(selectedParty.Location).State = EntityState.Deleted;
+                                _dbContext.SaveChanges();
+                            }
+                        }
                     }
-                    else
-                    {
-                        return BadRequest();
-                    }
-                }
-                else
-                {
-                    return BadRequest();
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return BadRequest();
             }
