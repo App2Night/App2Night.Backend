@@ -9,15 +9,15 @@ using Newtonsoft.Json;
 
 namespace App2NightAPI.Models.Authentification
 {
-    public class User
+    public class User : IdentityUser
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Key]
-        public Guid UserId { get; set; }
-        [Required]
-        public string Username { get; set; }
-        [Required]
-        public string Password { get; set; }
+        //[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        //[Key]
+        //public Guid UserId { get; set; }
+        //[Required]
+        //public string Username { get; set; }
+        //[Required]
+        //public string Password { get; set; }
         public Location Location { get; set; }
 
         //TODO Wenn der User abgefragt wird, soll das JSON-Objekt im nachhinein bearbeitet werden und nur 

@@ -4,9 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using App2NightAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace App2NightAPI.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     public class ValuesController : Controller
     {
@@ -20,6 +22,7 @@ namespace App2NightAPI.Controllers
         [HttpGet]
         public IEnumerable<string> Get()
         {
+            var test = User;
             return new string[] { "value1", "value2" };
         }
 

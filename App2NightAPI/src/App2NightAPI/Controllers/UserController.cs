@@ -61,14 +61,15 @@ namespace App2NightAPI.Controllers
         [HttpPost]
         public ActionResult Register([FromBody]Login value)
         {
-            var user = new User
-            {
-                Username = value.Username,
-                Password = value.Password
-            };
-            _dbContext.UserItems.Add(user);
-            _dbContext.SaveChanges();
-            return Created("", user.UserId);
+            //var user = new User
+            //{
+            //    Username = value.Username,
+            //    Password = value.Password
+            //};
+            //_dbContext.UserItems.Add(user);
+            //_dbContext.SaveChanges();
+            //return Created("", user.UserId);
+            return Ok();
         }
     }
 }

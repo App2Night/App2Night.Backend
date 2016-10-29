@@ -11,6 +11,8 @@ using App2NightAPI.Models;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.Swagger.Model;
 using Microsoft.Extensions.PlatformAbstractions;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using App2NightAPI.Models.Authentification;
 
 namespace App2NightAPI
 {
@@ -38,13 +40,8 @@ namespace App2NightAPI
         // This method gets called by the runtime. Use this method to add services to the container
         public void ConfigureServices(IServiceCollection services)
         {
-            
             // Add framework services.
             services.AddApplicationInsightsTelemetry(Configuration);
-
-            services.AddMvc().AddJsonOptions(option =>
-                option.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
-            );
 
             services.AddSwaggerGen(options =>
             {
@@ -60,6 +57,20 @@ namespace App2NightAPI
             });
 
             services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Database")));
+            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Database")));
+
+            services.AddIdentity<User, IdentityRole>()
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
+
+            services.AddMvc().AddJsonOptions(option =>
+                option.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+            );
+
+            services.AddDeveloperIdentityServer()
+                .AddInMemoryScopes(Config.GetScopes())
+                .AddInMemoryClients(Config.GetClients())
+                .AddAspNetIdentity<User>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
@@ -71,6 +82,20 @@ namespace App2NightAPI
             app.UseApplicationInsightsRequestTelemetry();
 
             app.UseApplicationInsightsExceptionTelemetry();
+
+            app.UseIdentityServerAuthentication(new IdentityServerAuthenticationOptions
+            {
+                Authority = "http://localhost:5000",
+                ScopeName = "App2NightAPI",
+                ScopeSecret = new Secrets().APISecret,
+                RequireHttpsMetadata = false
+            });
+
+            app.UseStaticFiles();
+
+            app.UseIdentity();
+
+            app.UseIdentityServer();
 
             app.UseMvc();
 

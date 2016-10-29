@@ -31,14 +31,28 @@ namespace App2NightAPI.Controllers
         {
             try
             {
-                var pa = _dbContext.PartyItems
+                //Test
+
+               var partys = _dbContext.PartyItems
                     .Where(p => p.PartyDate >= DateTime.Today)
                     .Include(p => p.Location)
                     .Include(p => p.Host)
                         .ThenInclude(h => h.Location)
                     .Take(15);
 
-                return pa;
+                foreach(Party singleParty in partys)
+                {
+                    if(singleParty.Location.Latitude != 0 && singleParty.Location.Longitude != 0)
+                    {
+
+                    }
+                    else
+                    {
+
+                    }
+                }
+
+                return partys;
             }
             catch (Exception)
             {
@@ -113,7 +127,7 @@ namespace App2NightAPI.Controllers
                     else
                     {
                         _dbContext.PartyItems.Add(party);
-                        _dbContext.UserItems.First<User>(p => p.UserId == Guid.Parse("1bd535c8-f90b-4a25-5b26-08d3f9b43b33")).PartyHostedByUser.Add(party);
+                        //_dbContext.UserItems.First<User>(p => p.UserId == Guid.Parse("1bd535c8-f90b-4a25-5b26-08d3f9b43b33")).PartyHostedByUser.Add(party);
                         _dbContext.SaveChanges();
                         return Created("", party.PartId);
                     }
@@ -271,9 +285,38 @@ namespace App2NightAPI.Controllers
                 MusicGenre = value.MusicGenre,
                 Location = value.Location,
                 PartyType = value.PartyType,
-                Host = _dbContext.UserItems.First<User>(p => p.UserId == Guid.Parse("1bd535c8-f90b-4a25-5b26-08d3f9b43b33")),
+                //Host = _dbContext.UserItems.First<User>(p => p.UserId == Guid.Parse("1bd535c8-f90b-4a25-5b26-08d3f9b43b33")),
                 Description = value.Description
             };
+        }
+
+        private double? _getDistance(double lat1, double lon1, double lat2, double lon2)
+        {
+            try
+            {
+                //Test
+                lat1 = 48.2086369;
+                lon1 = 8.7548875;
+                lat2 = 48.4456403;
+                lon2 = 8.6942879;
+
+                var R = 6371; //Radius Earth
+                var deltaLat = deg2rad(lat2 - lat1);
+                var deltaLon = deg2rad(lon2 - lon1);
+                var a = Math.Sin(deltaLat / 2) * Math.Sin(deltaLat / 2) + Math.Cos(deg2rad(lat1)) * Math.Cos(deg2rad(lat2)) * Math.Sin(deltaLon / 2) * Math.Sin(deltaLon / 2);
+                var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+                var d = R * c; //Distance in km
+                return d;
+            }
+            catch(Exception)
+            {
+                return null;
+            }
+        }
+
+        private double deg2rad(double deg)
+        {
+            return deg * (Math.PI / 100);
         }
         #endregion
     }
