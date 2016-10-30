@@ -7,15 +7,30 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Identity;
+using System.Threading.Tasks;
 
 namespace App2NightAPI.Controllers
 {
     [Route("api/User")]
     public class UserController : Controller 
     {
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
+        private readonly ILogger _logger;
         private DatabaseContext _dbContext;
-        public UserController(DatabaseContext dbContext)
+
+        public UserController(
+            UserManager<User> userManager,
+            SignInManager<User> signInManager,
+            ILoggerFactory loggerFactory,
+            DatabaseContext dbContext)
         {
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _logger = loggerFactory.CreateLogger<UserController>();
+
             _dbContext = dbContext;
         }
 
@@ -35,7 +50,7 @@ namespace App2NightAPI.Controllers
 
             //        if (user != null)
             //        {
-            //            JObject userJson = JObject.FromObject(user);
+            //JObject userJson = JObject.FromObject(user);
             //            foreach (var p in user.PartyHostedByUser)
             //            {
             //                userJson.Add("partId", p.PartId);
@@ -58,17 +73,13 @@ namespace App2NightAPI.Controllers
             return new string[] { "user..."};
         }
 
+        //  POST /api/User
         [HttpPost]
-        public ActionResult Register([FromBody]Login value)
+        public async Task<ActionResult> Register([FromBody]Login value)
         {
-            //var user = new User
-            //{
-            //    Username = value.Username,
-            //    Password = value.Password
-            //};
-            //_dbContext.UserItems.Add(user);
-            //_dbContext.SaveChanges();
-            //return Created("", user.UserId);
+            var user = new User { UserName = value.Username, Email = value.Email };
+            var result = await _userManager.CreateAsync(user, value.Password);
+
             return Ok();
         }
     }

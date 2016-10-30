@@ -19,10 +19,8 @@ namespace App2NightAPI.Models
         public Guid PartId { get; set; }
         [JsonIgnore]
         public DateTime CreationDate { get; set; }
-        [Required]
-        public DateTime Date { get; set; }
         public int Price { get; set; }
-        [Required]
+        [JsonIgnore]
         public User Host { get; set; }
         //public DateTime CreationDate { get; set; }
         //[Required]

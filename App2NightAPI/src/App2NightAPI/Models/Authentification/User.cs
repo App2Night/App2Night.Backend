@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace App2NightAPI.Models.Authentification
 {
-    public class User : IdentityUser
+    public class User : IdentityUser<Guid>
     {
         //[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         //[Key]

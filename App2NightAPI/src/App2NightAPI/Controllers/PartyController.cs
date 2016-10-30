@@ -6,16 +6,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Newtonsoft.Json.Linq;
 
 namespace App2NightAPI.Controllers
 {
+    [Authorize]
     [Route("api/Party")]
     public class PartyController : Controller
     {
         private DatabaseContext _dbContext;
-        public PartyController(DatabaseContext dbContext)
+        private readonly UserManager<User> _userManager;
+        public PartyController(DatabaseContext dbContext, UserManager<User> userManager)
         {
             _dbContext = dbContext;
+            _userManager = userManager;
         }
 
         // GET api/Party
@@ -26,18 +34,19 @@ namespace App2NightAPI.Controllers
         /// This function will return 15 partys from the database (at the moment!) where the date is today or in futre.
         /// </remarks>
         /// <returns></returns>
+        [AllowAnonymous]
         [HttpGet]
-        public IEnumerable<Party> Get()
+        public ActionResult Get()
         {
             try
             {
                 //Test
+                List<JObject> jsonList = new List<JObject>();
 
-               var partys = _dbContext.PartyItems
+                var partys = _dbContext.PartyItems
                     .Where(p => p.PartyDate >= DateTime.Today)
                     .Include(p => p.Location)
                     .Include(p => p.Host)
-                        .ThenInclude(h => h.Location)
                     .Take(15);
 
                 foreach(Party singleParty in partys)
@@ -50,9 +59,11 @@ namespace App2NightAPI.Controllers
                     {
 
                     }
+
+                    jsonList.Add(_AddHostToJson(singleParty));
                 }
 
-                return partys;
+                return Ok(jsonList);
             }
             catch (Exception)
             {
@@ -72,19 +83,22 @@ namespace App2NightAPI.Controllers
         /// <response code="200">Ok</response>
         /// <response code="400">Bad Request</response>
         /// <response code="404">Not Found</response>
+        [AllowAnonymous]
         [ProducesResponseType(typeof(Party), 200)]
         [HttpGet("id={id}")]
         public ActionResult GetPartyById(Guid? id)
         {
             try
             {
+                List<JObject> jsonList = new List<JObject>();
+
                 var singleParty = _dbContext.PartyItems
                     .Include(p => p.Location)
                     .Include(p => p.Host)
-                        .ThenInclude(h => h.Location)
                     .First<Party>(p => p.PartId == id);
 
-                return Ok(singleParty);
+                jsonList.Add(_AddHostToJson(singleParty));
+                return Ok(jsonList);
             }
             catch (Exception)
             {
@@ -127,7 +141,6 @@ namespace App2NightAPI.Controllers
                     else
                     {
                         _dbContext.PartyItems.Add(party);
-                        //_dbContext.UserItems.First<User>(p => p.UserId == Guid.Parse("1bd535c8-f90b-4a25-5b26-08d3f9b43b33")).PartyHostedByUser.Add(party);
                         _dbContext.SaveChanges();
                         return Created("", party.PartId);
                     }
@@ -275,6 +288,8 @@ namespace App2NightAPI.Controllers
         }
 
         #region Help Functions
+        public User User => _userManager.GetUserAsync(base.User).Result;
+
         private Party _mapPartyToModel(CreateParty value)
         {
             return new Party
@@ -285,9 +300,25 @@ namespace App2NightAPI.Controllers
                 MusicGenre = value.MusicGenre,
                 Location = value.Location,
                 PartyType = value.PartyType,
-                //Host = _dbContext.UserItems.First<User>(p => p.UserId == Guid.Parse("1bd535c8-f90b-4a25-5b26-08d3f9b43b33")),
+                Host = User,
+                //Host = _dbContext.Users.First<User>(p => p.Id == Guid.Parse("1bd535c8-f90b-4a25-5b26-08d3f9b43b33")),
                 Description = value.Description
             };
+        }
+
+        private JObject _AddHostToJson(Party singleParty)
+        {
+            var jobject = JObject.FromObject(singleParty);
+            var host = new JObject() {
+                        {
+                            "HostId", singleParty.Host.Id
+                        },
+                        {
+                            "UserName", singleParty.Host.UserName
+                        }
+                    };
+            jobject.Add("Host", host);
+            return jobject;
         }
 
         private double? _getDistance(double lat1, double lon1, double lat2, double lon2)

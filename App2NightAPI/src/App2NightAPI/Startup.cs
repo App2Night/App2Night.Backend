@@ -57,10 +57,16 @@ namespace App2NightAPI
             });
 
             services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Database")));
-            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Database")));
+            //services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Database")));
 
-            services.AddIdentity<User, IdentityRole>()
-            .AddEntityFrameworkStores<ApplicationDbContext>()
+            services.AddIdentity<User, IdentityRole<Guid>>(o => {
+                o.Password.RequireDigit = false;
+                o.Password.RequireLowercase = false;
+                o.Password.RequireNonAlphanumeric = false;
+                o.Password.RequiredLength = 3;
+                o.Password.RequireUppercase = false;
+            })
+            .AddEntityFrameworkStores<DatabaseContext, Guid>()
             .AddDefaultTokenProviders();
 
             services.AddMvc().AddJsonOptions(option =>
@@ -70,7 +76,8 @@ namespace App2NightAPI
             services.AddDeveloperIdentityServer()
                 .AddInMemoryScopes(Config.GetScopes())
                 .AddInMemoryClients(Config.GetClients())
-                .AddAspNetIdentity<User>();
+                .AddAspNetIdentity<User>()
+                .AddResourceOwnerValidator<RessourceOwnerPasswordValidator>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
