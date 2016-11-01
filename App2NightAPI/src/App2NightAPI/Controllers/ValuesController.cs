@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace App2NightAPI.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
+    [Authorize]
     public class ValuesController : Controller
     {
         private DatabaseContext _dbContext;

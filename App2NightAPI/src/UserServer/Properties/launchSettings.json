@@ -3,7 +3,7 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": false,
     "iisExpress": {
-      "applicationUrl": "http://localhost:5001/",
+      "applicationUrl": "http://localhost:5000/",
       "sslPort": 0
     }
   },
@@ -11,14 +11,13 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      "launchUrl": "api/values",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "App2NightAPI": {
+    "UserServer": {
       "commandName": "Project",
-      "launchUrl": "http://localhost:5000/api/values",
+      "launchUrl": "http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

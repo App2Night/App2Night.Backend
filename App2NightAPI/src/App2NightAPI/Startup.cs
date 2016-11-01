@@ -13,6 +13,11 @@ using Swashbuckle.Swagger.Model;
 using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using App2NightAPI.Models.Authentification;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Http;
+using App2Night.Shared;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace App2NightAPI
 {
@@ -59,25 +64,17 @@ namespace App2NightAPI
             services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Database")));
             //services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Database")));
 
-            services.AddIdentity<User, IdentityRole<Guid>>(o => {
-                o.Password.RequireDigit = false;
-                o.Password.RequireLowercase = false;
-                o.Password.RequireNonAlphanumeric = false;
-                o.Password.RequiredLength = 3;
-                o.Password.RequireUppercase = false;
-            })
-            .AddEntityFrameworkStores<DatabaseContext, Guid>()
-            .AddDefaultTokenProviders();
+            services.AddMvc(config =>
+                {
+                    var policy = new AuthorizationPolicyBuilder()
+                                    .RequireAuthenticatedUser()
+                                    .Build();
 
-            services.AddMvc().AddJsonOptions(option =>
-                option.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
-            );
-
-            services.AddDeveloperIdentityServer()
-                .AddInMemoryScopes(Config.GetScopes())
-                .AddInMemoryClients(Config.GetClients())
-                .AddAspNetIdentity<User>()
-                .AddResourceOwnerValidator<RessourceOwnerPasswordValidator>();
+                    config.Filters.Add(new AuthorizeFilter(policy));
+                })
+                .AddJsonOptions(option =>
+                    option.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+                );
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
@@ -92,17 +89,13 @@ namespace App2NightAPI
 
             app.UseIdentityServerAuthentication(new IdentityServerAuthenticationOptions
             {
-                Authority = "http://localhost:5000",
+                Authority = "http://app2nightuser.azurewebsites.net/",
+                //Authority = "http://localhost:5000",
                 ScopeName = "App2NightAPI",
                 ScopeSecret = new Secrets().APISecret,
-                RequireHttpsMetadata = false
+                RequireHttpsMetadata = false,
+                
             });
-
-            app.UseStaticFiles();
-
-            app.UseIdentity();
-
-            app.UseIdentityServer();
 
             app.UseMvc();
 

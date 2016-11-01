@@ -3,32 +3,12 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace App2NightAPI.Migrations
+namespace UserServer.Migrations
 {
-    public partial class InitialMigration : Migration
+    public partial class InitMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "LocationItems",
-                columns: table => new
-                {
-                    LocationId = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    CityName = table.Column<string>(nullable: true),
-                    CountryName = table.Column<string>(nullable: true),
-                    HouseNumber = table.Column<int>(nullable: false),
-                    HouseNumberAdditional = table.Column<string>(nullable: true),
-                    Latitude = table.Column<long>(nullable: false),
-                    Longitude = table.Column<long>(nullable: false),
-                    StreetName = table.Column<string>(nullable: true),
-                    Zipcode = table.Column<int>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_LocationItems", x => x.LocationId);
-                });
-
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
@@ -66,7 +46,6 @@ namespace App2NightAPI.Migrations
                     ConcurrencyStamp = table.Column<string>(nullable: true),
                     Email = table.Column<string>(maxLength: 256, nullable: true),
                     EmailConfirmed = table.Column<bool>(nullable: false),
-                    LocationId = table.Column<int>(nullable: true),
                     LockoutEnabled = table.Column<bool>(nullable: false),
                     LockoutEnd = table.Column<DateTimeOffset>(nullable: true),
                     NormalizedEmail = table.Column<string>(maxLength: 256, nullable: true),
@@ -81,12 +60,6 @@ namespace App2NightAPI.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_AspNetUsers_LocationItems_LocationId",
-                        column: x => x.LocationId,
-                        principalTable: "LocationItems",
-                        principalColumn: "LocationId",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -107,38 +80,6 @@ namespace App2NightAPI.Migrations
                         column: x => x.RoleId,
                         principalTable: "AspNetRoles",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "PartyItems",
-                columns: table => new
-                {
-                    PartId = table.Column<Guid>(nullable: false),
-                    CreationDate = table.Column<DateTime>(nullable: false),
-                    Description = table.Column<string>(nullable: false),
-                    HostId = table.Column<Guid>(nullable: true),
-                    LocationId = table.Column<int>(nullable: false),
-                    MusicGenre = table.Column<int>(nullable: false),
-                    PartyDate = table.Column<DateTime>(nullable: false),
-                    PartyName = table.Column<string>(nullable: false),
-                    PartyType = table.Column<int>(nullable: false),
-                    Price = table.Column<int>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PartyItems", x => x.PartId);
-                    table.ForeignKey(
-                        name: "FK_PartyItems_AspNetUsers_HostId",
-                        column: x => x.HostId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_PartyItems_LocationItems_LocationId",
-                        column: x => x.LocationId,
-                        principalTable: "LocationItems",
-                        principalColumn: "LocationId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -208,32 +149,6 @@ namespace App2NightAPI.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AspNetUsers_LocationId",
-                table: "AspNetUsers",
-                column: "LocationId");
-
-            migrationBuilder.CreateIndex(
-                name: "EmailIndex",
-                table: "AspNetUsers",
-                column: "NormalizedEmail");
-
-            migrationBuilder.CreateIndex(
-                name: "UserNameIndex",
-                table: "AspNetUsers",
-                column: "NormalizedUserName",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PartyItems_HostId",
-                table: "PartyItems",
-                column: "HostId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PartyItems_LocationId",
-                table: "PartyItems",
-                column: "LocationId");
-
-            migrationBuilder.CreateIndex(
                 name: "RoleNameIndex",
                 table: "AspNetRoles",
                 column: "NormalizedName");
@@ -262,13 +177,21 @@ namespace App2NightAPI.Migrations
                 name: "IX_AspNetUserRoles_UserId",
                 table: "AspNetUserRoles",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "EmailIndex",
+                table: "AspNetUsers",
+                column: "NormalizedEmail");
+
+            migrationBuilder.CreateIndex(
+                name: "UserNameIndex",
+                table: "AspNetUsers",
+                column: "NormalizedUserName",
+                unique: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "PartyItems");
-
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
@@ -289,9 +212,6 @@ namespace App2NightAPI.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
-
-            migrationBuilder.DropTable(
-                name: "LocationItems");
         }
     }
 }

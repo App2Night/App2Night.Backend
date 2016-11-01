@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace App2NightAPI.Models.REST_Models
+namespace UserServer.Models
 {
     public class Login
     {

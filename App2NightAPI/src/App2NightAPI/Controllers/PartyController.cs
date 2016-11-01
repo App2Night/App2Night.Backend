@@ -14,16 +14,16 @@ using Newtonsoft.Json.Linq;
 
 namespace App2NightAPI.Controllers
 {
-    [Authorize]
     [Route("api/Party")]
+    [Authorize]
     public class PartyController : Controller
     {
         private DatabaseContext _dbContext;
-        private readonly UserManager<User> _userManager;
-        public PartyController(DatabaseContext dbContext, UserManager<User> userManager)
+        //private readonly UserManager<User> _userManager;
+        public PartyController(DatabaseContext dbContext/*, UserManager<User> userManager*/)
         {
             _dbContext = dbContext;
-            _userManager = userManager;
+            //_userManager = userManager;
         }
 
         // GET api/Party
@@ -186,6 +186,7 @@ namespace App2NightAPI.Controllers
                     }
                     else
                     {
+                        var usr = User;
                         var party = _mapPartyToModel(value);
                         party.PartId = Guid.Parse(id.ToString());
 
@@ -214,7 +215,7 @@ namespace App2NightAPI.Controllers
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return BadRequest();
             }
@@ -254,6 +255,7 @@ namespace App2NightAPI.Controllers
                     {
                         Party selectedParty = _dbContext.PartyItems
                                  .Include(p => p.Location)
+                                 .Include(p => p.Host)
                                  .First<Party>(p => p.PartId == partyId);
 
                         if (selectedParty == null)
@@ -262,20 +264,23 @@ namespace App2NightAPI.Controllers
                             //Can't delete
                             return BadRequest("Can't delete a party with date in the past.");
                         }
+                        //Check if Party Host == Logged in User
+                        //Only the Host of the Party can delete it!
+                        //else if (selectedParty.Host.Id != User.Id)
+                        //{
+                        //  return Unauthorized();
+                        //}
+                        //Check if Party Datum is in future
                         else if (selectedParty.PartyDate < DateTime.Now)
                         {
-                            //Check if Party Datum is in future
-                            if (selectedParty.PartyDate < DateTime.Now)
-                            {
-                                return BadRequest();
-                            }
-                            else
-                            {
-                                //Delete from Database
-                                _dbContext.Entry(selectedParty).State = EntityState.Deleted;
-                                _dbContext.Entry(selectedParty.Location).State = EntityState.Deleted;
-                                _dbContext.SaveChanges();
-                            }
+                            return BadRequest();
+                        }
+                        else
+                        {
+                            //Delete from Database
+                            _dbContext.Entry(selectedParty).State = EntityState.Deleted;
+                            _dbContext.Entry(selectedParty.Location).State = EntityState.Deleted;
+                            _dbContext.SaveChanges();
                         }
                     }
                 }
@@ -288,7 +293,8 @@ namespace App2NightAPI.Controllers
         }
 
         #region Help Functions
-        public User User => _userManager.GetUserAsync(base.User).Result;
+        //public User User => _userManager.GetUserAsync(base.User).Result;
+
 
         private Party _mapPartyToModel(CreateParty value)
         {
@@ -300,8 +306,7 @@ namespace App2NightAPI.Controllers
                 MusicGenre = value.MusicGenre,
                 Location = value.Location,
                 PartyType = value.PartyType,
-                Host = User,
-                //Host = _dbContext.Users.First<User>(p => p.Id == Guid.Parse("1bd535c8-f90b-4a25-5b26-08d3f9b43b33")),
+                Host = _dbContext.UserItems.First<User>(p => p.UserId == Guid.Parse("1bd535c8-f90b-4a25-5b26-08d3f9b43b33")),
                 Description = value.Description
             };
         }
@@ -311,7 +316,7 @@ namespace App2NightAPI.Controllers
             var jobject = JObject.FromObject(singleParty);
             var host = new JObject() {
                         {
-                            "HostId", singleParty.Host.Id
+                            "HostId", singleParty.Host.UserId
                         },
                         {
                             "UserName", singleParty.Host.UserName

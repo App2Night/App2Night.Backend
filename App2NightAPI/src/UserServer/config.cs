@@ -1,4 +1,5 @@
-﻿using IdentityServer4.Models;
+﻿using App2Night.Shared;
+using IdentityServer4.Models;
 using IdentityServer4.Services.InMemory;
 using System;
 using System.Collections.Generic;
@@ -6,7 +7,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace App2NightAPI
+namespace UserServer
 {
     public class Config
     {
@@ -14,6 +15,9 @@ namespace App2NightAPI
         {
             return new List<Scope>
             {
+                StandardScopes.OfflineAccess,
+                StandardScopes.OpenId,
+                StandardScopes.Email,
                 new Scope
                 {
                     Name = "App2NightAPI",
@@ -23,11 +27,9 @@ namespace App2NightAPI
                      ScopeSecrets = new List<Secret>()
                      {
                         new Secret(new Secrets().APISecret.Sha256())
-                     }
-
-                },
-                StandardScopes.OfflineAccess,
-                StandardScopes.OpenId
+                     },
+                }
+                //StandardScopes.Profile
             };
         }
 
@@ -53,7 +55,9 @@ namespace App2NightAPI
                     {
                         "App2NightAPI",
                         StandardScopes.OfflineAccess.Name,
-                        StandardScopes.OpenId.Name
+                        StandardScopes.OpenId.Name,
+                        StandardScopes.Email.Name
+                        //StandardScopes.Profile.Name
                     },
 
                 }

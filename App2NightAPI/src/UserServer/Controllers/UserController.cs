@@ -1,7 +1,4 @@
-﻿using App2NightAPI.Models;
-using App2NightAPI.Models.Authentification;
-using App2NightAPI.Models.REST_Models;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,11 +7,15 @@ using Newtonsoft.Json.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using UserServer.Database;
+using UserServer.Models;
+using System.Web.Http;
 
-namespace App2NightAPI.Controllers
+namespace UserServer.Controllers
 {
     [Route("api/User")]
-    public class UserController : Controller 
+    public class UserController : Controller
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
@@ -33,6 +34,8 @@ namespace App2NightAPI.Controllers
 
             _dbContext = dbContext;
         }
+
+        //public User User => _userManager.GetUserAsync(base.User).Result;
 
         // GET api/User
         [HttpGet]
@@ -70,7 +73,9 @@ namespace App2NightAPI.Controllers
             //{
             //    //return BadRequest();
             //}
-            return new string[] { "user..."};
+            //return new string[] { "user..."};
+            var user = User;
+            return new string[] { "user..." };
         }
 
         //  POST /api/User
@@ -80,7 +85,14 @@ namespace App2NightAPI.Controllers
             var user = new User { UserName = value.Username, Email = value.Email };
             var result = await _userManager.CreateAsync(user, value.Password);
 
-            return Ok();
+            if(result.Succeeded)
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
+            }
         }
     }
 }

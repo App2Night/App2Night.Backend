@@ -5,3 +5,5 @@
 /App2NightAPI/src/App2NightAPI/appsettings.json
 /App2NightAPI/src/WebApplication1
 /App2NightAPI/src/App2NightAPI/Secrets.cs
+/App2NightAPI/src/UserServer/appsettings.json
+/App2NightAPI/src/App2Night.Shared/Secrets.cs
