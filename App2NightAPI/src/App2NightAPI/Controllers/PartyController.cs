@@ -16,14 +16,12 @@ namespace App2NightAPI.Controllers
 {
     [Route("api/Party")]
     [Authorize]
-    public class PartyController : Controller
+    public class PartyController : CustomController
     {
         private DatabaseContext _dbContext;
-        //private readonly UserManager<User> _userManager;
-        public PartyController(DatabaseContext dbContext/*, UserManager<User> userManager*/)
+        public PartyController(DatabaseContext dbContext, IUserService userService) : base(dbContext, userService)
         {
             _dbContext = dbContext;
-            //_userManager = userManager;
         }
 
         // GET api/Party
@@ -46,8 +44,7 @@ namespace App2NightAPI.Controllers
                 var partys = _dbContext.PartyItems
                     .Where(p => p.PartyDate >= DateTime.Today)
                     .Include(p => p.Location)
-                    .Include(p => p.Host)
-                    .Take(15);
+                    .Include(p => p.Host);
 
                 foreach(Party singleParty in partys)
                 {
@@ -186,7 +183,6 @@ namespace App2NightAPI.Controllers
                     }
                     else
                     {
-                        var usr = User;
                         var party = _mapPartyToModel(value);
                         party.PartId = Guid.Parse(id.ToString());
 
@@ -199,12 +195,19 @@ namespace App2NightAPI.Controllers
                         }
                         else
                         {
+                            var usr = GetUser();
                             party.Location.LocationId = _dbContext.PartyItems.Where(p => p.PartId == party.PartId).Select(p => new { p.Location.LocationId }).FirstOrDefault().LocationId;
 
                             if (!TryValidateModel(party))
                             {
                                 return BadRequest(new CreateParty());
                             }
+                            //TODO Check if Party Host == Logged in User
+                            //Only the Host of the Party can modify it!
+                            //else if (party.Host.UserId != usr.UserId)
+                            //{
+
+                            //}
                             else
                             {
                                 _dbContext.PartyItems.Update(party);
@@ -253,6 +256,7 @@ namespace App2NightAPI.Controllers
                     }
                     else
                     {
+                        var usr = GetUser();
                         Party selectedParty = _dbContext.PartyItems
                                  .Include(p => p.Location)
                                  .Include(p => p.Host)
@@ -264,11 +268,11 @@ namespace App2NightAPI.Controllers
                             //Can't delete
                             return BadRequest("Can't delete a party with date in the past.");
                         }
-                        //Check if Party Host == Logged in User
+                        //TODO Check if Party Host == Logged in User
                         //Only the Host of the Party can delete it!
-                        //else if (selectedParty.Host.Id != User.Id)
+                        //else if (selectedParty.Host.UserId != usr.UserId)
                         //{
-                        //  return Unauthorized();
+                        //    return Unauthorized();
                         //}
                         //Check if Party Datum is in future
                         else if (selectedParty.PartyDate < DateTime.Now)
@@ -293,8 +297,6 @@ namespace App2NightAPI.Controllers
         }
 
         #region Help Functions
-        //public User User => _userManager.GetUserAsync(base.User).Result;
-
 
         private Party _mapPartyToModel(CreateParty value)
         {
@@ -306,7 +308,8 @@ namespace App2NightAPI.Controllers
                 MusicGenre = value.MusicGenre,
                 Location = value.Location,
                 PartyType = value.PartyType,
-                Host = _dbContext.UserItems.First<User>(p => p.UserId == Guid.Parse("1bd535c8-f90b-4a25-5b26-08d3f9b43b33")),
+                //Host = _dbContext.UserItems.First<User>(p => p.UserId == Guid.Parse("1bd535c8-f90b-4a25-5b26-08d3f9b43b33")),
+                Host = _dbContext.UserItems.First<User>(p => p.UserId == GetUser().UserId),
                 Description = value.Description
             };
         }

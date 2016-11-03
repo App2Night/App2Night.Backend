@@ -71,10 +71,13 @@ namespace App2NightAPI
                                     .Build();
 
                     config.Filters.Add(new AuthorizeFilter(policy));
+                    
                 })
                 .AddJsonOptions(option =>
                     option.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
                 );
+
+            services.AddTransient<IUserService, UserService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline

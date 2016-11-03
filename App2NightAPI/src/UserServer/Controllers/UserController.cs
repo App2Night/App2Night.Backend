@@ -83,10 +83,17 @@ namespace UserServer.Controllers
         public async Task<ActionResult> Register([FromBody]Login value)
         {
             var user = new User { UserName = value.Username, Email = value.Email };
+
+            if (!String.IsNullOrEmpty(value.Email))
+            {
+                user.EmailConfirmed = true;
+            }
+
             var result = await _userManager.CreateAsync(user, value.Password);
 
-            if(result.Succeeded)
+            if (result.Succeeded)
             {
+                var t = await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("email", user.Email));
                 return Ok();
             }
             else

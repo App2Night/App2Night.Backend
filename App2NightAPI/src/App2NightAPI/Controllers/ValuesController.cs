@@ -5,24 +5,29 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using App2NightAPI.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using App2NightAPI.Models.Authentification;
 
 namespace App2NightAPI.Controllers
 {
     [Route("api/[controller]")]
     [Authorize]
-    public class ValuesController : Controller
+    public class ValuesController : CustomController
     {
         private DatabaseContext _dbContext;
-        public ValuesController(DatabaseContext dbContext)
+        //private IUserService _userService;
+
+        public ValuesController(DatabaseContext dbContext, IUserService userService) : base(dbContext, userService)
         {
             _dbContext = dbContext;
+            //_userService = userService;
         }
 
         // GET api/values
         [HttpGet]
         public IEnumerable<string> Get()
         {
-            var test = User;
+            var test = GetUser();
             return new string[] { "value1", "value2" };
         }
 

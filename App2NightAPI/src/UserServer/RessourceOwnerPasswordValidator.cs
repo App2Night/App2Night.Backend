@@ -27,10 +27,7 @@ namespace UserServer
             if(result.Succeeded)
             {
                 var user = await _userManager.FindByNameAsync(context.UserName);
-                //var claims = user.Claims;
-                List<Claim> claims = new List<Claim>();
-                claims.Add(new Claim("email", "test@test.de"));
-                context.Result = new GrantValidationResult(subject: user.Id.ToString(), authenticationMethod: "default", claims: claims);
+                context.Result = new GrantValidationResult(subject: user.Id.ToString(), authenticationMethod: "default", claims: null);
             }
             else
             {
