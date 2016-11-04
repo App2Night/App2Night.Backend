@@ -11,6 +11,8 @@ using Microsoft.Extensions.Logging;
 using UserServer.Database;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Swashbuckle.Swagger.Model;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace UserServer
 {
@@ -39,6 +41,19 @@ namespace UserServer
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSwaggerGen(options =>
+            {
+                options.SingleApiVersion(new Info
+                {
+                    Version = "v1",
+                    Title = "App2Night User",
+                    Description = "",
+                    TermsOfService = "None"
+                });
+                var basePath = PlatformServices.Default.Application.ApplicationBasePath;
+                options.IncludeXmlComments(basePath + "\\UserServer.xml");
+            });
+
             services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Database")));
 
             services.AddIdentity<User, IdentityRole<Guid>>(o =>
@@ -79,10 +94,8 @@ namespace UserServer
 
             app.UseMvc();
 
-            //app.Run(async (context) =>
-            //{
-            //    await context.Response.WriteAsync("Hello World!");
-            //});
+            app.UseSwagger();
+            app.UseSwaggerUi();
         }
     }
 }

@@ -77,6 +77,7 @@ namespace App2NightAPI
                     option.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
                 );
 
+            //Add own service
             services.AddTransient<IUserService, UserService>();
         }
 
