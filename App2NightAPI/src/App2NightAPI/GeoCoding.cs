@@ -1,4 +1,6 @@
-﻿using App2NightAPI.Models;
+﻿using App2Night.Shared;
+using App2NightAPI.Models;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -12,47 +14,51 @@ namespace App2NightAPI
     public class GeoCoding
     {
         private static HttpClient client = new HttpClient();
-        private static readonly string httpUrl = "http://app2nightapi.azurewebsites.net/api/party/id=b67fd496-af0f-42f0-9d09-08d402ae0c55";
+        private static readonly string httpUrl = "https://maps.googleapis.com/maps/api/geocode/json?";
 
         public static async void GetLocationByCoordinates(double lat, double lon)
         {
             if (lat != 0 && lon != 0)
             {
+                String Url = httpUrl + "latlng=" + lat.ToString() + "," + lon.ToString() + "&key=" + new Secrets().GoogleMapsApiKey;
                 _initializeHttpClient();
-                HttpResponseMessage message = await client.GetAsync(httpUrl);
+                HttpResponseMessage message = await client.GetAsync(Url);
                 if (!message.IsSuccessStatusCode)
                 {
                     //Something went wrong.
                 }
                 else
                 {
-                    string response = message.Content.ReadAsStringAsync().Result;
-                    if (String.IsNullOrEmpty(response))
-                    {
-                        //TODO return string is empty
-                    }
-                    else
-                    {
-                        //Begin with json parsing
-                        try
+                    String response = message.Content.ReadAsStringAsync().Result;
+                    //if (String.IsNullOrEmpty(response))
+                    //{
+                    //    //TODO return string is empty
+                    //}
+                    //else
+                    //{
+                          //Begin with json parsing
+                       try
                         {
                             if (response.StartsWith("["))
-                            {
-                                response = response.Remove(0, 1);
-                            }
+                                {
+                                    response = response.Remove(0, 1);
+                                }
                             if (response.EndsWith("]"))
-                            {
-                                response = response.Remove((response.Length - 1), 1);
-                            }
+                                {
+                                    response = response.Remove((response.Length - 1), 1);
+                                }
 
-                            var test = JObject.Parse(response);
-                            var partId = test["PartId"];
-                        }
+                            GoogleGeoCodingResponse test = JsonConvert.DeserializeObject<GoogleGeoCodingResponse>(response);
+
+                        //        var test = JObject.Parse(response);
+                        //        var partId = test["PartId"];
+                    }
                         catch (Exception)
                         {
                             //TODO Something went wrong during the parsing process
                         }
-                    }
+                    //}
+                    
                 }
             }
             else
