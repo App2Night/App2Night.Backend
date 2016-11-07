@@ -22,8 +22,8 @@ namespace App2NightAPI.Models
         public string HouseNumber { get; set; }
         public string HouseNumberAdditional { get; set; }
         public string Zipcode { get; set; }
-        public long Latitude { get; set; }
-        public long Longitude { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
         
     }
 }

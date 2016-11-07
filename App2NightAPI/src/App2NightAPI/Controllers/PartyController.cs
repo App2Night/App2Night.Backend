@@ -62,7 +62,7 @@ namespace App2NightAPI.Controllers
 
                 return Ok(jsonList);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return null;
             }
@@ -92,7 +92,7 @@ namespace App2NightAPI.Controllers
                 var singleParty = _dbContext.PartyItems
                     .Include(p => p.Location)
                     .Include(p => p.Host)
-                    .First<Party>(p => p.PartId == id);
+                    .First<Party>(p => p.PartyId == id);
 
                 jsonList.Add(_AddHostToJson(singleParty));
                 return Ok(jsonList);
@@ -116,7 +116,7 @@ namespace App2NightAPI.Controllers
         /// <response code="400">Bad Request</response>
         [ProducesResponseType(typeof(CreateParty), 400)]
         [HttpPost]
-        public ActionResult Post([FromBody]CreateParty value)
+        public async Task<ActionResult> Post([FromBody]CreateParty value)
         {
             try
             {
@@ -130,16 +130,25 @@ namespace App2NightAPI.Controllers
                 {
                     var party = _mapPartyToModel(value);
 
-                    if(!TryValidateModel(party))
+                    if (!TryValidateModel(party))
                     {
                         //Party Model is not valid!
                         return BadRequest(new CreateParty());
                     }
                     else
                     {
-                        _dbContext.PartyItems.Add(party);
-                        _dbContext.SaveChanges();
-                        return Created("", party.PartId);
+                        Location loc = await GeoCoding.GetLocationByAdress(party.Location.HouseNumber, party.Location.StreetName, party.Location.CityName);
+                        if (loc == null)
+                        {
+                            return BadRequest("Cannot find Location.");
+                        }
+                        else
+                        {
+                            party.Location = loc;
+                            _dbContext.PartyItems.Add(party);
+                            _dbContext.SaveChanges();
+                            return Created("", party.PartyId);
+                        }
                     }
                 }
             }
@@ -184,10 +193,10 @@ namespace App2NightAPI.Controllers
                     else
                     {
                         var party = _mapPartyToModel(value);
-                        party.PartId = Guid.Parse(id.ToString());
+                        party.PartyId = Guid.Parse(id.ToString());
 
                         //Check if Party Element exists in the databse.
-                        int count = _dbContext.PartyItems.Count(p => p.PartId == id);
+                        int count = _dbContext.PartyItems.Count(p => p.PartyId == id);
                         if (count != 1)
                         {
                             //Party contains not in the databse.
@@ -196,7 +205,10 @@ namespace App2NightAPI.Controllers
                         else
                         {
                             var usr = GetUser();
-                            party.Location.LocationId = _dbContext.PartyItems.Where(p => p.PartId == party.PartId).Select(p => new { p.Location.LocationId }).FirstOrDefault().LocationId;
+                            party.Location.LocationId = _dbContext.PartyItems
+                                .Where(p => p.PartyId == party.PartyId)
+                                .Select(p => new { p.Location.LocationId })
+                                .FirstOrDefault().LocationId;
 
                             if (!TryValidateModel(party))
                             {
@@ -249,7 +261,7 @@ namespace App2NightAPI.Controllers
                 }
                 else
                 {
-                    int count = _dbContext.PartyItems.Count(p => p.PartId == partyId);
+                    int count = _dbContext.PartyItems.Count(p => p.PartyId == partyId);
                     if (count != 1)
                     {
                         return NotFound("Party not found.");
@@ -260,7 +272,7 @@ namespace App2NightAPI.Controllers
                         Party selectedParty = _dbContext.PartyItems
                                  .Include(p => p.Location)
                                  .Include(p => p.Host)
-                                 .First<Party>(p => p.PartId == partyId);
+                                 .First<Party>(p => p.PartyId == partyId);
 
                         if (selectedParty == null)
                         {

@@ -50,6 +50,12 @@ namespace App2NightAPI.Controllers
         {
         }
 
+        [HttpPatch]
+        public int Patch(int id)
+        {
+            return id;
+        }
+
         // DELETE api/values/5
         [HttpDelete("{id}")]
         public void Delete(int id)

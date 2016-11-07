@@ -13,62 +13,136 @@ namespace App2NightAPI
 {
     public class GeoCoding
     {
-        private static HttpClient client = new HttpClient();
+        private static HttpClient client;
         private static readonly string httpUrl = "https://maps.googleapis.com/maps/api/geocode/json?";
 
-        public static async void GetLocationByCoordinates(double lat, double lon)
+        public static async Task<Location> GetLocationByCoordinates(double lat, double lon)
         {
             if (lat != 0 && lon != 0)
             {
-                String Url = httpUrl + "latlng=" + lat.ToString() + "," + lon.ToString() + "&key=" + new Secrets().GoogleMapsApiKey;
+                String Url = httpUrl + "latlng=" + lat.ToString(System.Globalization.CultureInfo.InvariantCulture) + "," + lon.ToString(System.Globalization.CultureInfo.InvariantCulture) + "&key=" + new Secrets().GoogleMapsApiKey;
                 _initializeHttpClient();
                 HttpResponseMessage message = await client.GetAsync(Url);
                 if (!message.IsSuccessStatusCode)
                 {
                     //Something went wrong.
+                    return null;
                 }
                 else
                 {
-                    String response = message.Content.ReadAsStringAsync().Result;
-                    //if (String.IsNullOrEmpty(response))
-                    //{
-                    //    //TODO return string is empty
-                    //}
-                    //else
-                    //{
-                          //Begin with json parsing
-                       try
-                        {
-                            if (response.StartsWith("["))
-                                {
-                                    response = response.Remove(0, 1);
-                                }
-                            if (response.EndsWith("]"))
-                                {
-                                    response = response.Remove((response.Length - 1), 1);
-                                }
-
-                            GoogleGeoCodingResponse test = JsonConvert.DeserializeObject<GoogleGeoCodingResponse>(response);
-
-                        //        var test = JObject.Parse(response);
-                        //        var partId = test["PartId"];
-                    }
-                        catch (Exception)
-                        {
-                            //TODO Something went wrong during the parsing process
-                        }
-                    //}
-                    
+                    Location l = _executeResponseMessage(message);
+                    return l;
                 }
             }
             else
             {
                 //TODO Errorhandling: latitude or longitude = 0
+                return null;
+            }
+        }
+
+        public static async Task<Location> GetLocationByAdress(string housNo, string street, string cityName)
+        {
+            //String Url = "https://maps.googleapis.com/maps/api/geocode/json?address=12+Florianstraße+Horb+am+Neckar&key=AIzaSyBr3MUN8w7qC4KmNmb059P27k-q0dhphnY";
+            String Url = httpUrl + "address=" + housNo + "+" + street + "+" + cityName + "&key=" + new Secrets().GoogleMapsApiKey;
+
+            _initializeHttpClient();
+            HttpResponseMessage message = await client.GetAsync(Url);
+            if (!message.IsSuccessStatusCode)
+            {
+                //Something went wrong.
+                return null;
+            }
+            else
+            {
+                Location l = _executeResponseMessage(message);
+                return l;
+            }
+        }
+
+        private static Location _executeResponseMessage(HttpResponseMessage message)
+        {
+            String response = message.Content.ReadAsStringAsync().Result;
+
+            //Begin with json parsing
+            try
+            {
+                if (response.StartsWith("["))
+                {
+                    response = response.Remove(0, 1);
+                }
+                if (response.EndsWith("]"))
+                {
+                    response = response.Remove((response.Length - 1), 1);
+                }
+
+                GoogleGeoCodingResponse googleResponse = JsonConvert.DeserializeObject<GoogleGeoCodingResponse>(response);
+
+                if (googleResponse.status == "ZERO_RESULTS")
+                {
+                    return null;
+                }
+                else if (googleResponse.status == "OK")
+                {
+                    Location loc = _getLocationFromJson(googleResponse);
+                    return loc;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (Exception)
+            {
+                //TODO Something went wrong during the parsing process
+                return null;
+            }
+        }
+
+        private static Location _getLocationFromJson(GoogleGeoCodingResponse googleResponse)
+        {
+            try
+            {
+                Location loc = new Location();
+
+                results res = googleResponse.results[0];
+                loc.Latitude = Convert.ToDouble(res.geometry.location.lat, System.Globalization.CultureInfo.InvariantCulture);
+                loc.Longitude = Convert.ToDouble(res.geometry.location.lng, System.Globalization.CultureInfo.InvariantCulture);
+
+                foreach (address_component adress in res.address_components)
+                {
+                    if (adress.types.Contains("street_number"))
+                    {
+                        loc.HouseNumber = adress.long_name;
+                    }
+                    else if (adress.types.Contains("route"))
+                    {
+                        loc.StreetName = adress.long_name;
+                    }
+                    else if (adress.types.Contains("locality"))
+                    {
+                        loc.CityName = adress.long_name;
+                    }
+                    else if (adress.types.Contains("country"))
+                    {
+                        loc.CountryName = adress.long_name;
+                    }
+                    else if (adress.types.Contains("postal_code"))
+                    {
+                        loc.Zipcode = adress.long_name;
+                    }
+                }
+                return loc;
+            }
+            catch(Exception)
+            {
+                return null;
             }
         }
 
         private static void _initializeHttpClient()
         {
+            client = new HttpClient();
             client.BaseAddress = new Uri("http://localhost:5001");
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));

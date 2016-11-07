@@ -8,7 +8,7 @@ using App2NightAPI.Models;
 namespace App2NightAPI.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20161101204307_InitialMigration")]
+    [Migration("20161107210035_InitialMigration")]
     partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -46,17 +46,17 @@ namespace App2NightAPI.Migrations
 
                     b.Property<string>("CountryName");
 
-                    b.Property<int>("HouseNumber");
+                    b.Property<string>("HouseNumber");
 
                     b.Property<string>("HouseNumberAdditional");
 
-                    b.Property<long>("Latitude");
+                    b.Property<double>("Latitude");
 
-                    b.Property<long>("Longitude");
+                    b.Property<double>("Longitude");
 
                     b.Property<string>("StreetName");
 
-                    b.Property<int>("Zipcode");
+                    b.Property<string>("Zipcode");
 
                     b.HasKey("LocationId");
 
@@ -65,7 +65,7 @@ namespace App2NightAPI.Migrations
 
             modelBuilder.Entity("App2NightAPI.Models.Party", b =>
                 {
-                    b.Property<Guid>("PartId")
+                    b.Property<Guid>("PartyId")
                         .ValueGeneratedOnAdd();
 
                     b.Property<DateTime>("CreationDate");
@@ -89,7 +89,7 @@ namespace App2NightAPI.Migrations
 
                     b.Property<int>("Price");
 
-                    b.HasKey("PartId");
+                    b.HasKey("PartyId");
 
                     b.HasIndex("HostUserId");
 

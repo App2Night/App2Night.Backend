@@ -16,7 +16,7 @@ namespace App2NightAPI.Models
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
-        public Guid PartId { get; set; }
+        public Guid PartyId { get; set; }
         [JsonIgnore]
         public DateTime CreationDate { get; set; }
         public int Price { get; set; }

@@ -17,12 +17,12 @@ namespace App2NightAPI.Migrations
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     CityName = table.Column<string>(nullable: true),
                     CountryName = table.Column<string>(nullable: true),
-                    HouseNumber = table.Column<int>(nullable: false),
+                    HouseNumber = table.Column<string>(nullable: true),
                     HouseNumberAdditional = table.Column<string>(nullable: true),
-                    Latitude = table.Column<long>(nullable: false),
-                    Longitude = table.Column<long>(nullable: false),
+                    Latitude = table.Column<double>(nullable: false),
+                    Longitude = table.Column<double>(nullable: false),
                     StreetName = table.Column<string>(nullable: true),
-                    Zipcode = table.Column<int>(nullable: false)
+                    Zipcode = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -53,7 +53,7 @@ namespace App2NightAPI.Migrations
                 name: "PartyItems",
                 columns: table => new
                 {
-                    PartId = table.Column<Guid>(nullable: false),
+                    PartyId = table.Column<Guid>(nullable: false),
                     CreationDate = table.Column<DateTime>(nullable: false),
                     Description = table.Column<string>(nullable: false),
                     HostUserId = table.Column<Guid>(nullable: true),
@@ -66,7 +66,7 @@ namespace App2NightAPI.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PartyItems", x => x.PartId);
+                    table.PrimaryKey("PK_PartyItems", x => x.PartyId);
                     table.ForeignKey(
                         name: "FK_PartyItems_UserItems_HostUserId",
                         column: x => x.HostUserId,
