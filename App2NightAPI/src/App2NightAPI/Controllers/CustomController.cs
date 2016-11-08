@@ -19,11 +19,7 @@ namespace App2NightAPI.Controllers
             _userService = userService;
         }
 
-        new User User => _userService.GetUser(_dbContext, base.User);
-
-        public User GetUser()
-        {
-            return User;
-        }
+        //[ApiExplorerSettings(IgnoreApi = true)]
+        protected new User User => _userService.GetUser(_dbContext, base.User);
     }
 }

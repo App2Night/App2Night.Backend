@@ -1,5 +1,6 @@
 ﻿using App2NightAPI.Models.Authentification;
 using App2NightAPI.Models.Enum;
+using App2NightAPI.Models.Model_Abstraction;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace App2NightAPI.Models.REST_Models
 {
-    public class CreateParty
+    public class CreateParty : IPartyBase 
     {
         [Required]
         public string PartyName { get; set; }
@@ -18,7 +19,16 @@ namespace App2NightAPI.Models.REST_Models
         [Required]
         public MusicGenre MusicGenre { get; set; }
         [Required]
-        public Location Location { get; set; }
+        public string CountryName { get; set; }
+        [Required]
+        public string CityName { get; set; }
+        [Required]
+        public string StreetName { get; set; }
+        [Required]
+        public string HouseNumber { get; set; }
+        public string HouseNumberAdditional { get; set; }
+        [Required]
+        public string Zipcode { get; set; }
         [Required]
         public PartyType PartyType { get; set; }
         [Required]

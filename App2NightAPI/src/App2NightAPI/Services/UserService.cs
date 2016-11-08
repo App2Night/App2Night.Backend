@@ -13,38 +13,52 @@ namespace App2NightAPI
         public Guid UserID { get; }
         public Guid Name { get; }
 
-        public User GetUser(DatabaseContext dbContext, ClaimsPrincipal user)
+        public User GetUser(DatabaseContext dbContext, ClaimsPrincipal pUser)
         {
-            User usr = new User();
-            usr.UserId = Guid.Parse(user.Claims.Where(o => o.Type == "sub").Select(p => new { p.Value }).FirstOrDefault().Value);
-            usr.UserName = user.Claims.Where(o => o.Type == "name").Select(p => new { p.Value }).FirstOrDefault().Value;
-            usr.Email = user.Claims.Where(o => o.Type == "email").Select(p => new { p.Value }).FirstOrDefault().Value;
+            bool hasChanged = false;
+            var userID = Guid.Parse(pUser.Claims.Where(o => o.Type == "sub").Select(p => new { p.Value }).FirstOrDefault().Value);
+            var userName  = pUser.Claims.Where(o => o.Type == "name").Select(p => new { p.Value }).FirstOrDefault().Value;
+            var email = pUser.Claims.Where(o => o.Type == "email").Select(p => new { p.Value }).FirstOrDefault().Value;
 
             //Check if user already exists
-            int usrCount = dbContext.UserItems.Where(u => u.UserId == usr.UserId).Count();
-            if(usrCount == 0)
+            var user = dbContext.UserItems.FirstOrDefault(u => u.UserId == userID);
+
+            if(user == null)
             {
-                //User is not in the databse
-                //Create User
-                dbContext.UserItems.Add(usr);
+                //Create new user
+                user = new User()
+                {
+                    UserId = userID,
+                    UserName = userName,
+                    Email = email,
+                };
+
+                dbContext.UserItems.Add(user);
                 dbContext.SaveChanges();
             }
             else
             {
                 //User exists already in the databsae
                 //Check if user changed
-                if(!dbContext.UserItems.Contains(usr))
+                if(user.UserName != userName)
                 {
-                    //User exists in the database but has changed
-                    dbContext.UserItems.Update(usr);
-                    dbContext.SaveChanges();   
+                    user.UserName = userName;
+                    hasChanged = true;
                 }
-                //else user exists and has not changed
-                //Select the partys where the current user is the host
-                usr.PartyHostedByUser = dbContext.PartyItems.Where(p => p.Host == usr).ToList();
+                if(user.Email != email)
+                {
+                    user.Email = email;
+                    hasChanged = true;
+                }
+
+                if (hasChanged)
+                {
+                    dbContext.UserItems.Update(user);
+                    dbContext.SaveChanges();
+                }
             }
 
-            return usr;
+            return user;
         }
     }
 }
