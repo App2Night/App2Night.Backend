@@ -27,7 +27,6 @@ namespace App2NightAPI.Controllers
         [HttpGet]
         public IEnumerable<string> Get()
         {
-            var test = GetUser();
             return new string[] { "value1", "value2" };
         }
 

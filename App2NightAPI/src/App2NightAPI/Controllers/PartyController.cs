@@ -273,6 +273,36 @@ namespace App2NightAPI.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// Validate a given location via Google
+        /// </summary>
+        /// <remarks>This validation will check the given location via google and return the Google-Result as a location.</remarks>
+        /// <param name="location">Current Location</param>
+        /// <returns> Http Status Code 400 (Bad Request) if given location is null, or Http Status Code 406 (Not Acceptable), or
+        /// Http Status Code Ok (201) if location was found.</returns>
+        [HttpPost("validate")]
+        public ActionResult ValidateAdress([FromBody]Location location)
+        {
+            if(location == null)
+            {
+                return BadRequest(new Location());
+            }
+            else
+            {
+                Location loc = null;
+                Task.WaitAll(Task.Run(async () => loc = await GeoCoding.GetLocationByAdress(location.HouseNumber, location.StreetName, location.CityName)));
+
+                if (loc == null)
+                {
+                    return StatusCode(406); //Not Acceptable
+                }
+                else
+                {
+                    return Ok(loc);
+                }
+            }
+        }
+
         #region Help Functions
         private void MapPartyToModel(CreateParty value, ref Party party)
         {
