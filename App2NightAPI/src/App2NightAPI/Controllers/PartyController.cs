@@ -276,7 +276,7 @@ namespace App2NightAPI.Controllers
         /// <summary>
         /// Validate a given location via Google
         /// </summary>
-        /// <remarks>This validation will check the given location via google and return the Google-Result as a location.</remarks>
+        /// <remarks>This validation will check the given location via google and return the google result as a location object.</remarks>
         /// <param name="location">Current Location</param>
         /// <returns> Http Status Code 400 (Bad Request) if given location is null, or Http Status Code 406 (Not Acceptable), or
         /// Http Status Code Ok (201) if location was found.</returns>

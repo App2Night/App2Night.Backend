@@ -48,11 +48,6 @@ namespace UserServer.Controllers
         {
             var user = new User { UserName = value.Username, Email = value.Email };
 
-            if (!String.IsNullOrEmpty(value.Email))
-            {
-                user.EmailConfirmed = true;
-            }
-
             var result = await _userManager.CreateAsync(user, value.Password);
 
             if (result.Succeeded)
