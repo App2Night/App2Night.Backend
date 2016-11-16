@@ -191,7 +191,7 @@ namespace App2NightAPI.Controllers
                     else if (value.PartyDate <= DateTime.Today)
                     {
                         //Party Date is not today or in future
-                        return BadRequest("Party have to be in the future.");
+                        return BadRequest("Party has to be in the future.");
                     }
                     else if (!TryValidateModel(party))
                     {
@@ -301,6 +301,24 @@ namespace App2NightAPI.Controllers
                     return Ok(loc);
                 }
             }
+        }
+
+        [HttpGet("history")]
+        public ActionResult GetHistoryAll()
+        {
+            List<JObject> jsonList = new List<JObject>();
+
+            var partys = _dbContext.PartyItems
+                    .Where(p => p.PartyDate < DateTime.Today)
+                    .Include(p => p.Location)
+                    .Include(p => p.Host);
+
+            foreach (Party singleParty in partys)
+            {
+                jsonList.Add(_AddHostToJson(singleParty));
+            }
+
+                return Ok(jsonList);
         }
 
         #region Help Functions
