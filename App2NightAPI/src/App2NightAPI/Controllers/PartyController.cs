@@ -46,21 +46,28 @@ namespace App2NightAPI.Controllers
                     .Include(p => p.Location)
                     .Include(p => p.Host);
 
-                foreach(Party singleParty in partys)
+                if (partys == null)
                 {
-                    if(singleParty.Location.Latitude != 0 && singleParty.Location.Longitude != 0)
-                    {
-
-                    }
-                    else
-                    {
-
-                    }
-
-                    jsonList.Add(_AddHostToJson(singleParty));
+                    return NotFound("There are no partys in the past.");
                 }
+                else
+                {
+                    foreach (Party singleParty in partys)
+                    {
+                        if (singleParty.Location.Latitude != 0 && singleParty.Location.Longitude != 0)
+                        {
 
-                return Ok(jsonList);
+                        }
+                        else
+                        {
+
+                        }
+
+                        jsonList.Add(_AddHostToJson(singleParty));
+                    }
+
+                    return Ok(jsonList);
+                }
             }
             catch (Exception ex)
             {
@@ -313,12 +320,19 @@ namespace App2NightAPI.Controllers
                     .Include(p => p.Location)
                     .Include(p => p.Host);
 
-            foreach (Party singleParty in partys)
+            if (partys == null)
             {
-                jsonList.Add(_AddHostToJson(singleParty));
+                return NotFound("There are no partys in the past.");
             }
+            else
+            {
+                foreach (Party singleParty in partys)
+                {
+                    jsonList.Add(_AddHostToJson(singleParty));
+                }
 
                 return Ok(jsonList);
+            }
         }
 
         #region Help Functions

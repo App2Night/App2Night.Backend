@@ -17,6 +17,11 @@ namespace App2NightAPI.Controllers
     {
         private readonly IHostingEnvironment _hostingEnvironment;
 
+        public ImageController(IHostingEnvironment hostingEnvironment)
+        {
+            _hostingEnvironment = hostingEnvironment;
+        }
+
         // GET api/image
         [HttpGet("{name}")]
         public ActionResult Get(string name)
@@ -36,7 +41,7 @@ namespace App2NightAPI.Controllers
             foreach (IFormFile formFile in files)
             {
                 var extension = formFile.ContentType;
-                if (extension == ".png" || extension == ".jpeg" || extension == ".jpeg")
+                if (extension == "image/png" || extension == "image/jpeg" || extension == "image/jpg")
                 {
                     using (var fileStream = new FileStream(Path.Combine(uploads, formFile.FileName), FileMode.Create))
                     {
