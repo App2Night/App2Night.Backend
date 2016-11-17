@@ -19,6 +19,7 @@ namespace App2NightAPI.Models
         [Key]
         public Guid PartyId { get; set; }
         [Required]
+        [MaxLength(32)]
         public string PartyName { get; set; }
         [JsonIgnore]
         public DateTime CreationDate { get; set; }
@@ -32,6 +33,7 @@ namespace App2NightAPI.Models
         [Required]
         public PartyType PartyType { get; set; }
         [Required]
+        [MaxLength(256)]
         public string Description { get; set; }
         [Required]
         public Location Location { get; set; }
