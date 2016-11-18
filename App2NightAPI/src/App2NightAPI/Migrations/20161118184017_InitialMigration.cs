@@ -18,7 +18,6 @@ namespace App2NightAPI.Migrations
                     CityName = table.Column<string>(nullable: true),
                     CountryName = table.Column<string>(nullable: true),
                     HouseNumber = table.Column<string>(nullable: true),
-                    HouseNumberAdditional = table.Column<string>(nullable: true),
                     Latitude = table.Column<double>(nullable: false),
                     Longitude = table.Column<double>(nullable: false),
                     StreetName = table.Column<string>(nullable: true),
@@ -81,6 +80,34 @@ namespace App2NightAPI.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "UserPartyItems",
+                columns: table => new
+                {
+                    UserId = table.Column<Guid>(nullable: false),
+                    PartyId = table.Column<Guid>(nullable: false),
+                    EventCommitment = table.Column<int>(nullable: false),
+                    LocationRating = table.Column<int>(nullable: false),
+                    MoodRating = table.Column<int>(nullable: false),
+                    PriceRating = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserPartyItems", x => new { x.UserId, x.PartyId });
+                    table.ForeignKey(
+                        name: "FK_UserPartyItems_PartyItems_PartyId",
+                        column: x => x.PartyId,
+                        principalTable: "PartyItems",
+                        principalColumn: "PartyId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserPartyItems_UserItems_UserId",
+                        column: x => x.UserId,
+                        principalTable: "UserItems",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_UserItems_LocationId",
                 table: "UserItems",
@@ -95,10 +122,23 @@ namespace App2NightAPI.Migrations
                 name: "IX_PartyItems_LocationId",
                 table: "PartyItems",
                 column: "LocationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserPartyItems_PartyId",
+                table: "UserPartyItems",
+                column: "PartyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserPartyItems_UserId",
+                table: "UserPartyItems",
+                column: "UserId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "UserPartyItems");
+
             migrationBuilder.DropTable(
                 name: "PartyItems");
 

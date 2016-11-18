@@ -47,8 +47,6 @@ namespace App2NightAPI.Migrations
 
                     b.Property<string>("HouseNumber");
 
-                    b.Property<string>("HouseNumberAdditional");
-
                     b.Property<double>("Latitude");
 
                     b.Property<double>("Longitude");
@@ -97,6 +95,29 @@ namespace App2NightAPI.Migrations
                     b.ToTable("PartyItems");
                 });
 
+            modelBuilder.Entity("App2NightAPI.Models.UserParty", b =>
+                {
+                    b.Property<Guid>("UserId");
+
+                    b.Property<Guid>("PartyId");
+
+                    b.Property<int>("EventCommitment");
+
+                    b.Property<int>("LocationRating");
+
+                    b.Property<int>("MoodRating");
+
+                    b.Property<int>("PriceRating");
+
+                    b.HasKey("UserId", "PartyId");
+
+                    b.HasIndex("PartyId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserPartyItems");
+                });
+
             modelBuilder.Entity("App2NightAPI.Models.Authentification.User", b =>
                 {
                     b.HasOne("App2NightAPI.Models.Location", "Location")
@@ -113,6 +134,19 @@ namespace App2NightAPI.Migrations
                     b.HasOne("App2NightAPI.Models.Location", "Location")
                         .WithMany()
                         .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("App2NightAPI.Models.UserParty", b =>
+                {
+                    b.HasOne("App2NightAPI.Models.Party", "Party")
+                        .WithMany()
+                        .HasForeignKey("PartyId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("App2NightAPI.Models.Authentification.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
         }

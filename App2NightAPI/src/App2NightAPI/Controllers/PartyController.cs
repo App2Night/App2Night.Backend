@@ -54,9 +54,9 @@ namespace App2NightAPI.Controllers
                 {
                     foreach (Party singleParty in partys)
                     {
-                        if (singleParty.Location.Latitude != 0 && singleParty.Location.Longitude != 0)
+                        if (singleParty.Location.Latitude == 0 || singleParty.Location.Longitude == 0)
                         {
-
+                            //Party without geocoordinates
                         }
                         else
                         {
@@ -123,7 +123,7 @@ namespace App2NightAPI.Controllers
         /// <response code="400">Bad Request</response>
         [ProducesResponseType(typeof(CreateParty), 400)]
         [HttpPost]
-        public async Task<ActionResult> Post([FromBody]CreateParty value)
+        public ActionResult Post([FromBody]CreateParty value)
         {
             try
             {
@@ -346,7 +346,7 @@ namespace App2NightAPI.Controllers
             }
 
             party.PartyName = value.PartyName;
-            party.PartyDate = value.PartyDate;
+            party.PartyDate = value.PartyDate.Millisecond == 0 ? value.PartyDate.AddMilliseconds(01.123) : value.PartyDate;
             party.MusicGenre = value.MusicGenre;
                 party.Location = new Location()
                 {
@@ -354,7 +354,6 @@ namespace App2NightAPI.Controllers
                     HouseNumber = value.HouseNumber,
                     StreetName = value.StreetName,
                     CountryName = value.CountryName,
-                    HouseNumberAdditional = value.HouseNumberAdditional,
                     Zipcode = value.Zipcode,
                     Latitude = loc.Latitude,
                     Longitude = loc.Longitude,

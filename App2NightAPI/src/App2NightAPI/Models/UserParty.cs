@@ -9,7 +9,9 @@ namespace App2NightAPI.Models
 {
     public class UserParty
     {
+        public Guid UserId { get; set; }
         public User User { get; set; }
+        public Guid PartyId { get; set; }
         public Party Party { get; set; }
         public EventCommitmentState EventCommitment { get; set; }
         public int PriceRating { get; set; }

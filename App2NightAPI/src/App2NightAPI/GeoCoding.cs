@@ -36,14 +36,13 @@ namespace App2NightAPI
             }
             else
             {
-                //TODO Errorhandling: latitude or longitude = 0
+                //Errorhandling: latitude or longitude = 0
                 return null;
             }
         }
 
         public static async Task<Location> GetLocationByAdress(string housNo, string street, string cityName)
         {
-            //String Url = "https://maps.googleapis.com/maps/api/geocode/json?address=12+Florianstraße+Horb+am+Neckar&key=AIzaSyBr3MUN8w7qC4KmNmb059P27k-q0dhphnY";
             String Url = httpUrl + "address=" + housNo + "+" + street + "+" + cityName + "&key=" + new Secrets().GoogleMapsApiKey;
 
             _initializeHttpClient();
@@ -94,7 +93,7 @@ namespace App2NightAPI
             }
             catch (Exception)
             {
-                //TODO Something went wrong during the parsing process
+                //Something went wrong during the parsing process
                 return null;
             }
         }
