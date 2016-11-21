@@ -26,7 +26,6 @@ namespace App2NightAPI.Models.REST_Models
         public string StreetName { get; set; }
         [Required]
         public string HouseNumber { get; set; }
-        public string HouseNumberAdditional { get; set; }
         [Required]
         public string Zipcode { get; set; }
         [Required]

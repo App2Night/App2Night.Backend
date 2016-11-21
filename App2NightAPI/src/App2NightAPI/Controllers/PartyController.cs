@@ -44,7 +44,7 @@ namespace App2NightAPI.Controllers
                 var partys = _dbContext.PartyItems
                     .Where(p => p.PartyDate >= DateTime.Today)
                     .Include(p => p.Location)
-                    .Include(p => p.Host);
+                    .Include(p => p.Host).ToList();
 
                 if (partys == null)
                 {
@@ -63,7 +63,9 @@ namespace App2NightAPI.Controllers
 
                         }
 
-                        jsonList.Add(_AddHostToJson(singleParty));
+                        jsonList.Add(AddCustomJson(singleParty));
+                        //TODO
+                        //jsonList.Add(AddHostToJson(singleParty));
                     }
 
                     return Ok(jsonList);
@@ -101,7 +103,8 @@ namespace App2NightAPI.Controllers
                     .Include(p => p.Host)
                     .First<Party>(p => p.PartyId == id);
 
-                jsonList.Add(_AddHostToJson(singleParty));
+                //jsonList.Add(AddHostToJson(singleParty));
+                jsonList.Add(AddCustomJson(singleParty));
                 return Ok(jsonList);
             }
             catch (Exception)
@@ -147,7 +150,7 @@ namespace App2NightAPI.Controllers
                     return Created("", party.PartyId);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return BadRequest(new CreateParty());
             }
@@ -318,7 +321,7 @@ namespace App2NightAPI.Controllers
             var partys = _dbContext.PartyItems
                     .Where(p => p.PartyDate < DateTime.Today)
                     .Include(p => p.Location)
-                    .Include(p => p.Host);
+                    .Include(p => p.Host).ToList();
 
             if (partys == null)
             {
@@ -328,7 +331,8 @@ namespace App2NightAPI.Controllers
             {
                 foreach (Party singleParty in partys)
                 {
-                    jsonList.Add(_AddHostToJson(singleParty));
+                    //TODO jsonList.Add(AddHostToJson(singleParty));
+                    jsonList.Add(AddCustomJson(singleParty));
                 }
 
                 return Ok(jsonList);
@@ -371,19 +375,48 @@ namespace App2NightAPI.Controllers
             return party;
         }
 
-        private JObject _AddHostToJson(Party singleParty)
+        private JObject AddCustomJson(Party singleParty)
         {
             var jobject = JObject.FromObject(singleParty);
+            AddHostToJson(ref jobject, singleParty.Host.UserId, singleParty.Host.UserName);
+            AddHostedByUserToJson(ref jobject, CheckPartyHostedByUser(singleParty));
+            return jobject;
+        }
+
+        private void AddHostToJson(ref JObject jobject, Guid UserId, String UserName)
+        {
+            //var jobject = JObject.FromObject(singleParty);
             var host = new JObject() {
                         {
-                            "HostId", singleParty.Host.UserId
+                            "HostId", /*singleParty.Host.*/UserId
                         },
                         {
-                            "UserName", singleParty.Host.UserName
+                            "UserName", /*singleParty.Host.*/UserName
                         }
                     };
             jobject.Add("Host", host);
-            return jobject;
+            //return jobject;
+        }
+
+        private void AddHostedByUserToJson(ref JObject party, Boolean IsHosted)
+        {
+            party.Add("HostedByUser", IsHosted);
+            //return party;
+        }
+
+        private Boolean CheckPartyHostedByUser(Party party)
+        {
+            //Check if party is hosted by current user
+            //No logged in user wants to see some partys
+            try
+            {
+                User usr = User;
+                return party.Host.UserId == User.UserId ? true : false;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
         #endregion
     }

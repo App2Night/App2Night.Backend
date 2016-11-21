@@ -68,7 +68,8 @@ namespace App2NightAPI.Migrations
                     b.Property<DateTime>("CreationDate");
 
                     b.Property<string>("Description")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasAnnotation("MaxLength", 256);
 
                     b.Property<Guid?>("HostUserId");
 
@@ -80,7 +81,8 @@ namespace App2NightAPI.Migrations
                     b.Property<DateTime>("PartyDate");
 
                     b.Property<string>("PartyName")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasAnnotation("MaxLength", 32);
 
                     b.Property<int>("PartyType");
 
@@ -103,11 +105,21 @@ namespace App2NightAPI.Migrations
 
                     b.Property<int>("EventCommitment");
 
-                    b.Property<int>("LocationRating");
+                    b.Property<int>("GeneralDownVotes");
 
-                    b.Property<int>("MoodRating");
+                    b.Property<int>("GeneralUpVotes");
 
-                    b.Property<int>("PriceRating");
+                    b.Property<int>("LocationDownVotes");
+
+                    b.Property<int>("LocationUpVotes");
+
+                    b.Property<int>("MoodDownVotes");
+
+                    b.Property<int>("MoodUpVotes");
+
+                    b.Property<int>("PriceDownVotes");
+
+                    b.Property<int>("PriceUpVotes");
 
                     b.HasKey("UserId", "PartyId");
 

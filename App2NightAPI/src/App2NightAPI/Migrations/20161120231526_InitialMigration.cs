@@ -54,12 +54,12 @@ namespace App2NightAPI.Migrations
                 {
                     PartyId = table.Column<Guid>(nullable: false),
                     CreationDate = table.Column<DateTime>(nullable: false),
-                    Description = table.Column<string>(nullable: false),
+                    Description = table.Column<string>(maxLength: 256, nullable: false),
                     HostUserId = table.Column<Guid>(nullable: true),
                     LocationId = table.Column<int>(nullable: false),
                     MusicGenre = table.Column<int>(nullable: false),
                     PartyDate = table.Column<DateTime>(nullable: false),
-                    PartyName = table.Column<string>(nullable: false),
+                    PartyName = table.Column<string>(maxLength: 32, nullable: false),
                     PartyType = table.Column<int>(nullable: false),
                     Price = table.Column<int>(nullable: false)
                 },
@@ -87,9 +87,14 @@ namespace App2NightAPI.Migrations
                     UserId = table.Column<Guid>(nullable: false),
                     PartyId = table.Column<Guid>(nullable: false),
                     EventCommitment = table.Column<int>(nullable: false),
-                    LocationRating = table.Column<int>(nullable: false),
-                    MoodRating = table.Column<int>(nullable: false),
-                    PriceRating = table.Column<int>(nullable: false)
+                    GeneralDownVotes = table.Column<int>(nullable: false),
+                    GeneralUpVotes = table.Column<int>(nullable: false),
+                    LocationDownVotes = table.Column<int>(nullable: false),
+                    LocationUpVotes = table.Column<int>(nullable: false),
+                    MoodDownVotes = table.Column<int>(nullable: false),
+                    MoodUpVotes = table.Column<int>(nullable: false),
+                    PriceDownVotes = table.Column<int>(nullable: false),
+                    PriceUpVotes = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
