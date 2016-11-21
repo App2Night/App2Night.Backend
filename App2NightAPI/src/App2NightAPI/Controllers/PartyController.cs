@@ -18,62 +18,155 @@ namespace App2NightAPI.Controllers
     [Authorize]
     public class PartyController : CustomController
     {
+        private readonly int maxResults = 50;
         private DatabaseContext _dbContext;
         public PartyController(DatabaseContext dbContext, IUserService userService) : base(dbContext, userService)
         {
             _dbContext = dbContext;
         }
 
+        //// GET api/Party
+        ///// <summary>
+        ///// Get Partys
+        ///// </summary>
+        ///// <remarks>
+        ///// This function will return partys from the database where the date is today or in futre with the related rating.
+        ///// </remarks>
+        ///// <returns></returns>
+        //[AllowAnonymous]
+        //[HttpGet]
+        //public ActionResult Get()
+        //{
+        //    try
+        //    {
+        //        //Test
+        //        List<JObject> jsonList = new List<JObject>();
+
+        //        var partys = _dbContext.PartyItems
+        //            .Where(p => p.PartyDate >= DateTime.Today)
+        //            .Include(p => p.Location)
+        //            .Include(p => p.Host).ToList();
+
+        //        if (partys == null)
+        //        {
+        //            return NotFound("There are no partys in the future.");
+        //        }
+        //        else
+        //        {
+        //            foreach (Party singleParty in partys)
+        //            {
+        //                if (singleParty.Location.Latitude == 0 || singleParty.Location.Longitude == 0)
+        //                {
+        //                    //Party without geocoordinates
+        //                }
+        //                else
+        //                {
+
+        //                }
+
+        //                jsonList.Add(AddCustomJson(singleParty));
+        //                //TODO
+        //                //jsonList.Add(AddHostToJson(singleParty));
+        //            }
+
+        //            return Ok(jsonList);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return null;
+        //    }
+        //}
+
         // GET api/Party
         /// <summary>
-        /// Get Partys
+        /// Get Partys by user location.
         /// </summary>
         /// <remarks>
-        /// This function will return partys from the database where the date is today or in futre with the related rating.
+        /// This function will return partys from the database where the date is today or in the future with the related rating and is near to the user location.
+        /// <br/><b>Please pass the URL-Parameter the following way: ...?lat=49...&amp;lon=9....&amp;radius=2...</b>
+        /// <br/> Radius: Please pass a value between 0 and 200.
         /// </remarks>
-        /// <returns></returns>
+        /// <param name="lat">User latitude</param>
+        /// <param name="lon">User longitude</param>
+        /// <param name="radius">Radius</param>
+        /// <returns>Http Status Code 200 (Ok) and the Party List, or Http Status Code 400 (Bad Request), or Http Status Code 404 (Not Found) if no party in the future exists.</returns>
+        /// <response code="200">Ok</response>
+        /// <response code="400">Bad Request</response>
+        /// <response code="404">Not Found</response>
         [AllowAnonymous]
         [HttpGet]
-        public ActionResult Get()
+        public ActionResult GetWithUserLocation(double lat, double lon, float radius)
         {
             try
             {
-                //Test
-                List<JObject> jsonList = new List<JObject>();
-
-                var partys = _dbContext.PartyItems
-                    .Where(p => p.PartyDate >= DateTime.Today)
-                    .Include(p => p.Location)
-                    .Include(p => p.Host).ToList();
-
-                if (partys == null)
+                if (radius < 0 || radius > 200)
                 {
-                    return NotFound("There are no partys in the past.");
+                    //Radius is out of range
+                    return BadRequest("Radius is out of range. Please pass a value between 0 and 200.");
                 }
                 else
                 {
-                    foreach (Party singleParty in partys)
+                    //Test
+                    List<JObject> jsonList = new List<JObject>();
+
+                    var partys = _dbContext.PartyItems
+                        .Where(p => p.PartyDate >= DateTime.Today)
+                        .Include(p => p.Location)
+                        .Include(p => p.Host).ToList();
+
+                    if (partys == null)
                     {
-                        if (singleParty.Location.Latitude == 0 || singleParty.Location.Longitude == 0)
-                        {
-                            //Party without geocoordinates
-                        }
-                        else
-                        {
-
-                        }
-
-                        jsonList.Add(AddCustomJson(singleParty));
-                        //TODO
-                        //jsonList.Add(AddHostToJson(singleParty));
+                        return NotFound("There are no partys in the future.");
                     }
+                    else
+                    {
+                        //NOTE: Outcommented code is to get the nearest results. At the moment not used.
 
-                    return Ok(jsonList);
+                        //Initialize list do save the party Id and the distance to the user
+                        //List<Tuple<Guid, double?>> partyDistanceList = new List<Tuple<Guid, double?>>();
+                        foreach (Party singleParty in partys)
+                        {
+                            double? distance = GeoCoding.GetDistance(lat, lon, singleParty.Location.Latitude, singleParty.Location.Longitude);
+
+                            if (distance != null)
+                            {
+                                if (distance <= radius)
+                                {
+                                    //Save party Id and distance
+                                    //partyDistanceList.Add(new Tuple<Guid, double?> ( singleParty.PartyId, distance ));
+
+                                    //Party is near to the user location
+                                    jsonList.Add(AddCustomJson(singleParty));
+                                }
+                            }
+                        }
+
+                        //if(partyDistanceList.Count <= 0)
+                        //{
+                        //    return BadRequest("No party in your nearness.");
+                        //}
+                        //else
+                        //{
+                        //    //Sort list by distance and take the first "maxResults"-entries
+                        //    IEnumerable<Tuple<Guid, double?>> sortedList = partyDistanceList.OrderBy(l => l.Item2).ToList().Take(maxResults);
+                        //    foreach(var singleEntry in sortedList)
+                        //    {
+                        //        var party = partys.FirstOrDefault(p => p.PartyId == singleEntry.Item1);
+                        //        if(party != null)
+                        //        {
+                        //            //Party is near to the user location
+                        //            jsonList.Add(AddCustomJson(party));
+                        //        }
+                        //    }
+                        //}
+                        return Ok(jsonList);
+                    }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return null;
+                return BadRequest("Paramter in URL: ...?lat=49...&lon=9....&radius=2...");
             }
         }
 
@@ -488,6 +581,7 @@ namespace App2NightAPI.Controllers
 
         private void AddCommitments(ref JObject party, Guid partyId)
         {
+            JArray userArray = new JArray();
             //Select all commitet user to the given party id
             var commitetUser = _dbContext.UserPartyItems
                 .Where(up => up.PartyId == partyId && up.EventCommitment == Models.Enum.EventCommitmentState.Accepted)
@@ -497,7 +591,6 @@ namespace App2NightAPI.Controllers
             if(commitetUser != null && commitetUser.Count > 0)
             {
                 //Add all selected users to an array with UserId and UserName
-                JArray userArray = new JArray();
                 foreach (var up in commitetUser)
                 {
                     var user = new JObject
@@ -511,9 +604,9 @@ namespace App2NightAPI.Controllers
                     };
                     userArray.Add(user);
                 }
-                //Add the user array to the current party-JSON
-                party.Add("CommittedUser", userArray);
             }
+            //Add the user array to the current party-JSON
+            party.Add("CommittedUser", userArray);
         }
         #endregion
     }

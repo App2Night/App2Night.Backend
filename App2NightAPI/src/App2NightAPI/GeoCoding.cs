@@ -151,12 +151,6 @@ namespace App2NightAPI
         {
             try
             {
-                //Test coordinates
-                lat1 = 48.2086369;
-                lon1 = 8.7548875;
-                lat2 = 48.4456403;
-                lon2 = 8.6942879;
-
                 var R = 6371; //Radius Earth
                 var deltaLat = deg2rad(lat2 - lat1);
                 var deltaLon = deg2rad(lon2 - lon1);
