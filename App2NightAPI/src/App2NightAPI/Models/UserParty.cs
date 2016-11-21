@@ -17,16 +17,17 @@ namespace App2NightAPI.Models
         public Guid PartyId { get; set; }
         public Party Party { get; set; }
         public EventCommitmentState EventCommitment { get; set; }
-        //public int PriceRating { get; set; }
-        //public int LocationRating { get; set; }
-        //public int MoodRating { get; set; }
-        public int GeneralUpVotes { get; set; }
-        public int GeneralDownVotes { get; set; }
-        public int PriceUpVotes { get; set; }
-        public int PriceDownVotes { get; set; }
-        public int LocationUpVotes { get; set; }
-        public int LocationDownVotes { get; set; }
-        public int MoodUpVotes { get; set; }
-        public int MoodDownVotes { get; set; }
+        public int GeneralRating { get; set; }
+        public int PriceRating { get; set; }
+        public int LocationRating { get; set; }
+        public int MoodRating { get; set; }
+        //public int GeneralUpVotes { get; set; }
+        //public int GeneralDownVotes { get; set; }
+        //public int PriceUpVotes { get; set; }
+        //public int PriceDownVotes { get; set; }
+        //public int LocationUpVotes { get; set; }
+        //public int LocationDownVotes { get; set; }
+        //public int MoodUpVotes { get; set; }
+        //public int MoodDownVotes { get; set; }
     }
 }

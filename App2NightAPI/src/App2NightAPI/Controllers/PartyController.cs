@@ -29,7 +29,7 @@ namespace App2NightAPI.Controllers
         /// Get Partys
         /// </summary>
         /// <remarks>
-        /// This function will return 15 partys from the database (at the moment!) where the date is today or in futre.
+        /// This function will return partys from the database where the date is today or in futre with the related rating.
         /// </remarks>
         /// <returns></returns>
         [AllowAnonymous]
@@ -380,6 +380,7 @@ namespace App2NightAPI.Controllers
             var jobject = JObject.FromObject(singleParty);
             AddHostToJson(ref jobject, singleParty.Host.UserId, singleParty.Host.UserName);
             AddHostedByUserToJson(ref jobject, CheckPartyHostedByUser(singleParty));
+            AddRatingToParty(ref jobject, singleParty.PartyId);
             return jobject;
         }
 
@@ -416,6 +417,71 @@ namespace App2NightAPI.Controllers
             catch (Exception ex)
             {
                 return false;
+            }
+        }
+
+        private void AddRatingToParty(ref JObject party, Guid partyId)
+        {
+            var userRatings = _dbContext.UserPartyItems
+                .Where(up => up.PartyId == partyId)
+                .ToList();
+
+            if(userRatings != null)
+            {
+                int generalUp = 0;
+                int generalDown = 0;
+                int priceUp = 0;
+                int priceDown = 0;
+                int locationUp = 0;
+                int locationDown = 0;
+                int moodUp = 0;
+                int moodDown = 0;
+
+                foreach (UserParty up in userRatings)
+                {
+                    if(up.GeneralRating == 1)
+                    {
+                        generalUp++;
+                    }
+                    else if(up.GeneralRating == -1)
+                    {
+                        generalDown++;
+                    }
+                    if(up.PriceRating == 1)
+                    {
+                        priceUp++;
+                    }
+                    else if(up.PriceRating == -1)
+                    {
+                        priceDown++;
+                    }
+                    if(up.LocationRating == 1)
+                    {
+                        locationUp++;
+                    }
+                    else if(up.LocationRating == -1)
+                    {
+                        locationDown++;
+                    }
+                    if(up.MoodRating == 1)
+                    {
+                        moodUp++;
+                    }
+                    else if(up.MoodRating == -1)
+                    {
+                        moodDown++;
+                    }
+                }
+
+                //Add calculated values to json
+                party.Add("GeneralUpVoting", generalUp);
+                party.Add("GeneralDownVoting", generalDown);
+                party.Add("PriceUpVotring", priceUp);
+                party.Add("PriceDownVoting", priceDown);
+                party.Add("LocationUpVoting", locationUp);
+                party.Add("LocationDownVoting", locationDown);
+                party.Add("MoodUpVoting", moodUp);
+                party.Add("MoodDownVoting", moodDown);
             }
         }
         #endregion

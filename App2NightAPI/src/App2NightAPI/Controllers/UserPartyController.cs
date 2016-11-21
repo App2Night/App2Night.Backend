@@ -28,9 +28,9 @@ namespace App2NightAPI.Controllers
         /// </summary>
         /// <remarks> This function sets the users commitmenstate to the party.
         /// </remarks>
-        /// <param name="id"></param>
-        /// <param name="commitmentState"></param>
-        /// <returns></returns>
+        /// <param name="id">Party Id</param>
+        /// <param name="commitmentState">Value from EventCommitmentState-Enum.</param>
+        /// <returns>Http Status Code 200 (Ok), or Http Status Code 400 (Bad Request), or Http Status Code 404 (Not Found) if Party doesn't exists.</returns>
         [ProducesResponseType(typeof(EventCommitmentState), 400)]
         [HttpPut]
         [Route("commitmentState/id={id}")]
@@ -47,7 +47,7 @@ namespace App2NightAPI.Controllers
                 {
                     //Select party
                     var party = _dbContext.PartyItems
-                        .FirstOrDefault(p => p.PartyId == id);// && p.PartyDate <= DateTime.Today.AddDays(1));
+                        .FirstOrDefault(p => p.PartyId == id);
 
                     if (party == null)
                     {
@@ -107,10 +107,10 @@ namespace App2NightAPI.Controllers
         /// </summary>
         /// <remarks> This function sets the users rating to the party.
         /// </remarks>
-        /// <param name="id"></param>
-        /// <param name="commitmentState"></param>
-        /// <returns></returns>
-        [ProducesResponseType(typeof(EventCommitmentState), 400)]
+        /// <param name="id">Party Id</param>
+        /// <param name="partyRating">Model with the different rating values. <b>Please set:<br/>0 for not rated,<br/>1 for Up-Vote and <br/>-1 for Down-Vote!</b></param>
+        /// <returns>Http Status Code 200 (Ok), or Http Status Code 400 (Bad Request), or Http Status Code 404 (Not Found) if Party doesn't exists.</returns>
+        [ProducesResponseType(typeof(UserPartyRating), 400)]
         [HttpPut]
         [Route("partyRating/id={id}")]
         public ActionResult SetRating(Guid? id, [FromBody]UserPartyRating partyRating)
@@ -126,7 +126,7 @@ namespace App2NightAPI.Controllers
                 {
                     //Select party
                     var party = _dbContext.PartyItems
-                        .FirstOrDefault(p => p.PartyId == id);// && p.PartyDate <= DateTime.Today.AddDays(1));
+                        .FirstOrDefault(p => p.PartyId == id);
 
                     if (party == null)
                     {
@@ -135,6 +135,10 @@ namespace App2NightAPI.Controllers
                     else if (party.PartyDate < DateTime.Now)
                     {
                         return BadRequest("Can't rate a party with party date in the past.");
+                    }
+                    else if(!TryValidateModel(partyRating))
+                    {
+                        return BadRequest(new UserPartyRating());
                     }
                     else
                     {
@@ -159,9 +163,6 @@ namespace App2NightAPI.Controllers
                             }
                             else
                             {
-                                //TODO
-                                //Check if Up and Down Votes pro Attribute is set...
-
                                 Boolean hasChanged = MapRatingToModel(partyRating, ref userParty);
                                 if(!hasChanged)
                                 {
@@ -190,44 +191,24 @@ namespace App2NightAPI.Controllers
         {
             Boolean hasChanged = false;
             //Value mapping
-            if (userParty.GeneralUpVotes != partyRating.GeneralUpVotes)
+            if (userParty.GeneralRating != partyRating.GeneralRating)
             {
-                userParty.GeneralUpVotes = partyRating.GeneralUpVotes;
+                userParty.GeneralRating = partyRating.GeneralRating;
                 hasChanged = true;
             }
-            if (userParty.GeneralDownVotes != partyRating.GeneralDownVotes)
+            if (userParty.PriceRating != partyRating.PriceRating)
             {
-                userParty.GeneralDownVotes = partyRating.GeneralDownVotes;
+                userParty.PriceRating = partyRating.PriceRating;
                 hasChanged = true;
             }
-            if (userParty.PriceUpVotes != partyRating.PriceUpVotes)
+            if (userParty.LocationRating != partyRating.LocationRating)
             {
-                userParty.PriceUpVotes = partyRating.PriceUpVotes;
+                userParty.LocationRating = partyRating.LocationRating;
                 hasChanged = true;
             }
-            if (userParty.PriceDownVotes != partyRating.PriceDownVotes)
+            if (userParty.MoodRating != partyRating.MoodRating)
             {
-                userParty.PriceDownVotes = partyRating.PriceDownVotes;
-                hasChanged = true;
-            }
-            if (userParty.LocationUpVotes != partyRating.LocationUpVotes)
-            {
-                userParty.LocationUpVotes = partyRating.LocationUpVotes;
-                hasChanged = true;
-            }
-            if (userParty.LocationDownVotes != partyRating.LocationDownVotes)
-            {
-                userParty.LocationDownVotes = partyRating.LocationDownVotes;
-                hasChanged = true;
-            }
-            if (userParty.MoodUpVotes != partyRating.MoodUpVotes)
-            {
-                userParty.MoodUpVotes = partyRating.MoodUpVotes;
-                hasChanged = true;
-            }
-            if (userParty.MoodDownVotes != partyRating.MoodDownVotes)
-            {
-                userParty.MoodDownVotes = partyRating.MoodDownVotes;
+                userParty.MoodRating = partyRating.MoodRating;
                 hasChanged = true;
             }
 
@@ -237,37 +218,21 @@ namespace App2NightAPI.Controllers
         private String CheckRatingValuesRange(UserPartyRating partyRating)
         {
             //Check rating values
-            if (!CheckRatingValue(partyRating.GeneralUpVotes))
+            if (!CheckRatingValue(partyRating.GeneralRating))
             {
-                return "GeneralUpVotes value is not beetween 0 and 1.";
+                return "GeneralRating value is not beetween -1 and 1.";
             }
-            else if (!CheckRatingValue(partyRating.GeneralDownVotes))
+            else if (!CheckRatingValue(partyRating.PriceRating))
             {
-                return "GeneralDownVotes value is not beetween 0 and 1.";
+                return "PriceRating value is not beetween -1 and 1.";
             }
-            else if (!CheckRatingValue(partyRating.PriceUpVotes))
+            else if (!CheckRatingValue(partyRating.LocationRating))
             {
-                return "PriceUpVotes value is not beetween 0 and 1.";
+                return "LocationRating value is not beetween -1 and 1.";
             }
-            else if (!CheckRatingValue(partyRating.PriceDownVotes))
+            else if (!CheckRatingValue(partyRating.MoodRating))
             {
-                return "PriceDownVotes value is not beetween 0 and 1.";
-            }
-            else if (!CheckRatingValue(partyRating.LocationUpVotes))
-            {
-                return "LocationUpVotes value is not beetween 0 and 1.";
-            }
-            else if (!CheckRatingValue(partyRating.LocationDownVotes))
-            {
-                return "LocationDownVotes value is not beetween 0 and 1.";
-            }
-            else if (!CheckRatingValue(partyRating.MoodUpVotes))
-            {
-                return "MoodUpVotes value is not beetween 0 and 1.";
-            }
-            else if (!CheckRatingValue(partyRating.MoodDownVotes))
-            {
-                return "MoodDownVotes value is not beetween 0 and 1.";
+                return "MoodRating value is not beetween -1 and 1.";
             }
             else
             {
@@ -277,7 +242,7 @@ namespace App2NightAPI.Controllers
 
         private Boolean CheckRatingValue(int val)
         {
-            if(val >= 0 && val <= 1)
+            if(val >= -1 && val <= 1)
             {
                 return true;
             }

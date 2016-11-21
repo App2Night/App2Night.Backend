@@ -8,7 +8,7 @@ using App2NightAPI.Models;
 namespace App2NightAPI.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20161120231526_InitialMigration")]
+    [Migration("20161121081957_InitialMigration")]
     partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -106,21 +106,13 @@ namespace App2NightAPI.Migrations
 
                     b.Property<int>("EventCommitment");
 
-                    b.Property<int>("GeneralDownVotes");
+                    b.Property<int>("GeneralRating");
 
-                    b.Property<int>("GeneralUpVotes");
+                    b.Property<int>("LocationRating");
 
-                    b.Property<int>("LocationDownVotes");
+                    b.Property<int>("MoodRating");
 
-                    b.Property<int>("LocationUpVotes");
-
-                    b.Property<int>("MoodDownVotes");
-
-                    b.Property<int>("MoodUpVotes");
-
-                    b.Property<int>("PriceDownVotes");
-
-                    b.Property<int>("PriceUpVotes");
+                    b.Property<int>("PriceRating");
 
                     b.HasKey("UserId", "PartyId");
 

@@ -87,14 +87,10 @@ namespace App2NightAPI.Migrations
                     UserId = table.Column<Guid>(nullable: false),
                     PartyId = table.Column<Guid>(nullable: false),
                     EventCommitment = table.Column<int>(nullable: false),
-                    GeneralDownVotes = table.Column<int>(nullable: false),
-                    GeneralUpVotes = table.Column<int>(nullable: false),
-                    LocationDownVotes = table.Column<int>(nullable: false),
-                    LocationUpVotes = table.Column<int>(nullable: false),
-                    MoodDownVotes = table.Column<int>(nullable: false),
-                    MoodUpVotes = table.Column<int>(nullable: false),
-                    PriceDownVotes = table.Column<int>(nullable: false),
-                    PriceUpVotes = table.Column<int>(nullable: false)
+                    GeneralRating = table.Column<int>(nullable: false),
+                    LocationRating = table.Column<int>(nullable: false),
+                    MoodRating = table.Column<int>(nullable: false),
+                    PriceRating = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
