@@ -132,9 +132,9 @@ namespace App2NightAPI.Controllers
                     {
                         return NotFound("Party not found.");
                     }
-                    else if (party.PartyDate < DateTime.Now)
+                    else if (party.PartyDate.Date != DateTime.Today.Date && party.PartyDate.AddDays(1).Date != DateTime.Today.Date)
                     {
-                        return BadRequest("Can't rate a party with party date in the past.");
+                        return BadRequest("It's just possible to vote on the day of the party or the day after.");
                     }
                     else if(!TryValidateModel(partyRating))
                     {

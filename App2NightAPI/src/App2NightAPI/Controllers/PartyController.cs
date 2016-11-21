@@ -381,6 +381,7 @@ namespace App2NightAPI.Controllers
             AddHostToJson(ref jobject, singleParty.Host.UserId, singleParty.Host.UserName);
             AddHostedByUserToJson(ref jobject, CheckPartyHostedByUser(singleParty));
             AddRatingToParty(ref jobject, singleParty.PartyId);
+            AddCommitments(ref jobject, singleParty.PartyId);
             return jobject;
         }
 
@@ -414,7 +415,7 @@ namespace App2NightAPI.Controllers
                 User usr = User;
                 return party.Host.UserId == User.UserId ? true : false;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }
@@ -482,6 +483,36 @@ namespace App2NightAPI.Controllers
                 party.Add("LocationDownVoting", locationDown);
                 party.Add("MoodUpVoting", moodUp);
                 party.Add("MoodDownVoting", moodDown);
+            }
+        }
+
+        private void AddCommitments(ref JObject party, Guid partyId)
+        {
+            //Select all commitet user to the given party id
+            var commitetUser = _dbContext.UserPartyItems
+                .Where(up => up.PartyId == partyId && up.EventCommitment == Models.Enum.EventCommitmentState.Accepted)
+                .Select(u => new { u.User })
+                .ToList();
+
+            if(commitetUser != null && commitetUser.Count > 0)
+            {
+                //Add all selected users to an array with UserId and UserName
+                JArray userArray = new JArray();
+                foreach (var up in commitetUser)
+                {
+                    var user = new JObject
+                    {
+                        {
+                            "UserId", up.User.UserId
+                        },
+                        {
+                            "UserName", up.User.UserName
+                        }
+                    };
+                    userArray.Add(user);
+                }
+                //Add the user array to the current party-JSON
+                party.Add("CommittedUser", userArray);
             }
         }
         #endregion
