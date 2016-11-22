@@ -383,6 +383,8 @@ namespace App2NightAPI.Controllers
         /// <param name="location">Current Location</param>
         /// <returns> Http Status Code 400 (Bad Request) if given location is null, or Http Status Code 406 (Not Acceptable), or
         /// Http Status Code Ok (201) if location was found.</returns>
+        /// <response code="200">Ok</response>
+        /// <response code="406">Not Acceptable</response>
         [HttpPost("validate")]
         public ActionResult ValidateAdress([FromBody]Location location)
         {
@@ -406,29 +408,84 @@ namespace App2NightAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Select User History
+        /// </summary>
+        /// <remarks>This function selects all parties in the past where the User has EvenCommtitmentState = Accepted.</remarks>
+        /// <returns> Http Status Code 404 (Not found) if there are no parties for the user in future, or Http Status Code 200 (Ok)</returns>
+        /// <response code="200">Ok</response>
+        /// <response code="404">Not Found</response>
         [HttpGet("history")]
         public ActionResult GetHistoryAll()
         {
             List<JObject> jsonList = new List<JObject>();
 
-            var partys = _dbContext.PartyItems
-                    .Where(p => p.PartyDate < DateTime.Today)
-                    .Include(p => p.Location)
-                    .Include(p => p.Host).ToList();
+            var userPartys = _dbContext.UserPartyItems
+                .Where(up => up.UserId == User.UserId
+                    && up.EventCommitment == Models.Enum.EventCommitmentState.Accepted)
+                .ToList();
 
-            if (partys == null)
+            if (userPartys != null && userPartys.Count == 0)
             {
-                return NotFound("There are no partys in the past.");
+                return NotFound("There are no partys for the current user in the past.");
             }
             else
             {
-                foreach (Party singleParty in partys)
+                foreach(var singleUserParty in userPartys)
                 {
-                    //TODO jsonList.Add(AddHostToJson(singleParty));
-                    jsonList.Add(AddCustomJson(singleParty));
-                }
+                    var party = _dbContext.PartyItems
+                        .Include(p => p.Location)
+                        .Include(p => p.Host)
+                        .FirstOrDefault(p => p.PartyId == singleUserParty.PartyId
+                                    && p.PartyDate.Date < DateTime.Now.Date);
 
-                return Ok(jsonList);
+                    if (party != null)
+                    {
+                        jsonList.Add(AddCustomJson(party));
+                    }
+                }
+                return (Ok(jsonList));
+            }
+        }
+
+        /// <summary>
+        /// Select User Partys
+        /// </summary>
+        /// <remarks>This function selects all parties in the future where the User has EvenCommtitmentState = Accepted or Noted.</remarks>
+        /// <returns> Http Status Code 404 (Not found) if there are no parties for the user in future, or Http Status Code 200 (Ok)</returns>
+        /// <response code="200">Ok</response>
+        /// <response code="404">Not Found</response>
+        [HttpGet("myParties")]
+        public ActionResult GetMyParties()
+        {
+            List<JObject> jsonList = new List<JObject>();
+
+            var userPartys = _dbContext.UserPartyItems
+                .Where(up => up.UserId == User.UserId
+                    && (up.EventCommitment == Models.Enum.EventCommitmentState.Accepted
+                    || up.EventCommitment == Models.Enum.EventCommitmentState.Noted))
+                .ToList();
+
+            if(userPartys != null && userPartys.Count == 0)
+            {
+                return NotFound("There are no partys for the current user.");
+            }
+            else
+            {
+                foreach(var singleUserParty in userPartys)
+                {
+                    var party = _dbContext.PartyItems
+                        .Include(p => p.Location)
+                        .Include(p => p.Host)
+                        .FirstOrDefault(p => p.PartyId == singleUserParty.PartyId
+                                    && p.PartyDate.Date >= DateTime.Now.Date);
+
+                    if(party != null)
+                    {
+                        jsonList.Add(AddCustomJson(party));
+                    }
+                }
+                return (Ok(jsonList));
             }
         }
 
@@ -505,10 +562,9 @@ namespace App2NightAPI.Controllers
             //No logged in user wants to see some partys
             try
             {
-                User usr = User;
                 return party.Host.UserId == User.UserId ? true : false;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return false;
             }
