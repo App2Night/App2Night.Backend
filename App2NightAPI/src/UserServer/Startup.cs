@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Swashbuckle.Swagger.Model;
 using Microsoft.Extensions.PlatformAbstractions;
+using UserServer.Services;
 
 namespace UserServer
 {
@@ -63,6 +64,9 @@ namespace UserServer
                 o.Password.RequireNonAlphanumeric = false;
                 o.Password.RequiredLength = 3;
                 o.Password.RequireUppercase = false;
+
+                //TODO Test Add E-Mail required
+                o.SignIn.RequireConfirmedEmail = true;
             })
            .AddEntityFrameworkStores<DatabaseContext, Guid>()
            .AddDefaultTokenProviders();
@@ -74,6 +78,9 @@ namespace UserServer
                 .AddInMemoryClients(Config.GetClients())
                 .AddAspNetIdentity<User>()
                 .AddResourceOwnerValidator<RessourceOwnerPasswordValidator>();
+
+            //Add own service
+            services.AddTransient<IEmailSender, AuthMessageSender>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using UserServer.Database;
 using UserServer.Models;
 using System.Web.Http;
+using UserServer.Services;
 
 namespace UserServer.Controllers
 {
@@ -19,17 +20,20 @@ namespace UserServer.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+        private readonly IEmailSender _emailSender;
         private readonly ILogger _logger;
         private DatabaseContext _dbContext;
 
         public UserController(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
+            IEmailSender emailSender,
             ILoggerFactory loggerFactory,
             DatabaseContext dbContext)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _emailSender = emailSender;
             _logger = loggerFactory.CreateLogger<UserController>();
 
             _dbContext = dbContext;
@@ -54,11 +58,21 @@ namespace UserServer.Controllers
                 if (result.Succeeded)
                 {
                     var t = await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("email", user.Email));
-                    await _signInManager.SignInAsync(user, false);
-                    return Created("", user.Id);
+                    // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
+                    // Send an email with this link
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var callbackUrl = Url.Action("ConfirmEmail", "User", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
+
+                    //Use BodyBuilder for message with HTML Code
+                    string message = "Hello " + user.UserName + "<br/><br/>" + $"Please confirm your account by clicking this link: <a href='{callbackUrl}'>link</a> <br/><br/> Best greets from App2Night-Team";
+                    await _emailSender.SendEmailAsync(value.Email, "Confirm your App2Night-Account", message);
+                    
+                    return Created("","E-Mail sent to user email adress.");
                 }
                 else
                 {
+                    //TDOD Error handling if username is a duplicate
+                    //TODO Error handling if email is a duplicate
                     return BadRequest(new Login());
                 }
             }
@@ -67,6 +81,58 @@ namespace UserServer.Controllers
                 return BadRequest("Email is not valid.");
             }
         }
+
+        // GET : /User/ConfirmEmail
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        {
+            if(userId == null || code == null)
+            {
+                return BadRequest("UserId or Code is null");
+            }
+            else
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                if(user == null)
+                {
+                    return BadRequest("Can't find user by given Id");
+                }
+                else
+                {
+                    //Get the confirmed token
+                    //var confirmToke = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    //Confirm email by user and token
+                    var userConfirmationResult = await _userManager.ConfirmEmailAsync(user, code);
+                    if(!userConfirmationResult.Succeeded)
+                    {
+                        return BadRequest("Can't confirm user token to email");
+                    }
+                    else
+                    {
+                        return Ok();
+                    }
+                }
+            }
+        }
+
+        //// GET: /Account/ConfirmEmail
+        //[HttpGet]
+        //[AllowAnonymous]
+        //public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        //{
+        //    if (userId == null || code == null)
+        //    {
+        //        return View("Error");
+        //    }
+        //    var user = await _userManager.FindByIdAsync(userId);
+        //    if (user == null)
+        //    {
+        //        return View("Error");
+        //    }
+        //    var result = await _userManager.ConfirmEmailAsync(user, code);
+        //    return View(result.Succeeded ? "ConfirmEmail" : "Error");
+        //}
 
         // DELETE /api/User
         /// <summary>
