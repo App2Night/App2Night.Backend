@@ -47,18 +47,24 @@ namespace UserServer.Controllers
         public async Task<ActionResult> Register([FromBody]Login value)
         {
             var user = new User { UserName = value.Username, Email = value.Email };
-
-            var result = await _userManager.CreateAsync(user, value.Password);
-
-            if (result.Succeeded)
+            if (user.Email.Contains("@"))
             {
-                var t = await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("email", user.Email));
-                await _signInManager.SignInAsync(user, false);
-                return Created("", user.Id);
+                var result = await _userManager.CreateAsync(user, value.Password);
+
+                if (result.Succeeded)
+                {
+                    var t = await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("email", user.Email));
+                    await _signInManager.SignInAsync(user, false);
+                    return Created("", user.Id);
+                }
+                else
+                {
+                    return BadRequest(new Login());
+                }
             }
             else
             {
-                return BadRequest(new Login());
+                return BadRequest("Email is not valid.");
             }
         }
 
