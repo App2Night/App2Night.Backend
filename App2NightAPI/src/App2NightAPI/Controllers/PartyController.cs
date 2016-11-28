@@ -223,20 +223,21 @@ namespace App2NightAPI.Controllers
         {
             try
             {
-                //Check if Party Date is today or in future
-                if (value.PartyDate <= DateTime.Today)
-                {
-                    //Party Date is the past
-                    return BadRequest("Party date can't be in the past.");
-                }
-                else if (!TryValidateModel(value))
+                //Check if Json is valid.
+                if (!TryValidateModel(value))
                 {
                     //Party Model is not valid!
                     return BadRequest(new CreateParty());
                 }
+                //Check if Party Date is today or in future
+                else if (value.PartyDate <= DateTime.Today)
+                {
+                    //Party Date is the past
+                    return BadRequest("Party date can't be in the past.");
+                } 
                 else
                 {
-                    //Party is valid.
+                    //Party is valid and is added to database.
                     var party = MapPartyToModel(value);
                     _dbContext.PartyItems.Add(party);
                     _dbContext.SaveChanges();
@@ -271,6 +272,7 @@ namespace App2NightAPI.Controllers
                 //Check if Party Id is valid
                 if (!Validator.IsGuidValid(id.ToString()))
                 {
+                    //Can't parse Party ID
                     return BadRequest("Party ID is not valid.");
                 }
                 else
@@ -335,6 +337,7 @@ namespace App2NightAPI.Controllers
             Guid partyId;
             try
             {
+                //Check if Party Id is valid
                 if (!Guid.TryParse(id.ToString(), out partyId))
                 {
                     //Can't parse Party ID
@@ -347,14 +350,19 @@ namespace App2NightAPI.Controllers
                         .Include(p => p.Location)
                         .FirstOrDefault(p => p.PartyId == id);
 
+                    //Check if party exists
                     if(party == null)
                     {
                         return NotFound("Party not found.");
                     }
+
+                    //Check if User is Host of the party
                     else if(party.Host.UserId != User.UserId)
                     {
                         return Unauthorized();
                     }
+
+                    //Check if the Date of the party is valid.
                     else if(party.PartyDate < DateTime.Now)
                     {
                         return BadRequest("Can't delete. Party date is in the past.");
