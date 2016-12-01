@@ -43,7 +43,7 @@ namespace App2NightAPI
 
         public static async Task<Location> GetLocationByAdress(string housNo, string street, string cityName)
         {
-            String Url = httpUrl + "address=" + housNo + "+" + street + "+" + cityName + "&key=" + new Secrets().GoogleMapsApiKey;
+            String Url = httpUrl + "address=" + housNo + "+" + street + "+" + cityName + "&language=DE&key=" + new Secrets().GoogleMapsApiKey;
 
             _initializeHttpClient();
             HttpResponseMessage message = await client.GetAsync(Url);
