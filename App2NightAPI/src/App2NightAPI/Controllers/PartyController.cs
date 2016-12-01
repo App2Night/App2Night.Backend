@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Newtonsoft.Json.Linq;
+using App2NightAPI.Models.Enum;
 
 namespace App2NightAPI.Controllers
 {
@@ -546,6 +547,7 @@ namespace App2NightAPI.Controllers
             AddHostedByUserToJson(ref jobject, CheckPartyHostedByUser(singleParty));
             AddRatingToParty(ref jobject, singleParty.PartyId);
             AddCommitments(ref jobject, singleParty.PartyId);
+            AddUserCommitmentState(ref jobject, singleParty.PartyId);
             return jobject;
         }
 
@@ -677,6 +679,36 @@ namespace App2NightAPI.Controllers
             }
             //Add the user array to the current party-JSON
             party.Add("CommittedUser", userArray);
+        }
+
+        private void AddUserCommitmentState(ref JObject party,  Guid partyId)
+        {
+            try
+            {
+                var userCommitment = _dbContext.UserPartyItems
+                    .FirstOrDefault(p => p.PartyId == partyId && p.UserId == User.UserId);
+
+                if (userCommitment != null)
+                {
+                    party.Add("UserCommitmentState", GetValueFromEventCommitmentstate(userCommitment.EventCommitment).ToString());
+                }
+                else
+                {
+                    //Set default value
+                    party.Add("UserCommitmentState", GetValueFromEventCommitmentstate(userCommitment.EventCommitment).ToString());
+                }
+            }
+            catch(Exception)
+            {
+                //Set default commitmentstate by definition
+                party.Add("UserCommitmentState", GetValueFromEventCommitmentstate(EventCommitmentState.Rejected).ToString());
+            }
+        }
+
+        private String GetValueFromEventCommitmentstate(EventCommitmentState state)
+        {
+            int iState = (int)Enum.Parse(state.GetType(), state.ToString());
+            return iState.ToString();
         }
         #endregion
     }

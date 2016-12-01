@@ -53,7 +53,7 @@ namespace App2NightAPI.Controllers
                     {
                         return NotFound("Party not found.");
                     }
-                    else if (party.PartyDate < DateTime.Now)
+                    else if (party.PartyDate.Date < DateTime.Now.Date)
                     {
                         return BadRequest("Can't commit to a party with party date in the past.");
                     }
