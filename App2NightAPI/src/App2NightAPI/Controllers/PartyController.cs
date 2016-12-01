@@ -415,7 +415,7 @@ namespace App2NightAPI.Controllers
                 {
                     if(location.CityName == loc.CityName || 
                        loc.CityName.ToString().Contains(location.CityName.ToString()) || 
-                       location.CityName.ToString().Contains(location.CityName.ToString()))
+                       location.CityName.ToString().Contains(loc.CityName.ToString()))
                     {
                         return Ok(loc);
                     }
