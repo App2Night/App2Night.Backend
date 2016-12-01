@@ -83,8 +83,8 @@ namespace UserServer.Controllers
         }
 
         // GET : /User/ConfirmEmail
-        [HttpGet]
         [AllowAnonymous]
+        [HttpGet]
         public async Task<IActionResult> ConfirmEmail(string userId, string code)
         {
             if(userId == null || code == null)
@@ -114,6 +114,22 @@ namespace UserServer.Controllers
                     }
                 }
             }
+        }
+
+        // POST: /User/ResetPassword
+        [AllowAnonymous]
+        [HttpPost("ResetPassword")]
+        public async Task<IActionResult> ResetPassword(string email)
+        {
+            if(String.IsNullOrEmpty(email))
+            {
+                return BadRequest("Email is empty.");
+            }
+            else
+            {
+                var user = await _userManager.FindByEmailAsync(email);
+            }
+            return null;
         }
 
         //// GET: /Account/ConfirmEmail

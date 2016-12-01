@@ -263,7 +263,7 @@ namespace App2NightAPI.Controllers
         /// <response code="400">Bad Request</response>
         /// <response code="404">Not Found</response>
         [ProducesResponseType(typeof(CreateParty), 400)]
-        [HttpPut("id={id}")]
+        [HttpPut]
         public ActionResult Modify(Guid? id, [FromBody]CreateParty value)
         {
             try
@@ -329,7 +329,7 @@ namespace App2NightAPI.Controllers
         /// <response code="200">Ok</response>
         /// <response code="400">Bad Request</response>
         /// <response code="404"> Not Found</response>
-        [HttpDelete("id={id}")]
+        [HttpDelete]
         public ActionResult Delete(Guid? id)
         {
             Guid partyId;
