@@ -410,11 +410,16 @@ namespace App2NightAPI.Controllers
                 {
                     return StatusCode(406); //Not Acceptable
                 }
-                else if (location.CountryName == loc.CountryName&&
-                         location.CityName == loc.CityName &&
+                else if (location.CountryName == loc.CountryName &&
                          location.HouseNumber == loc.HouseNumber)
                 {
-                    return Ok(loc);
+                    if(location.CityName == loc.CityName || 
+                       loc.CityName.ToString().Contains(location.CityName.ToString()) || 
+                       location.CityName.ToString().Contains(location.CityName.ToString()))
+                    {
+                        return Ok(loc);
+                    }
+                    return StatusCode(406);
                 }
                 else
                 {
