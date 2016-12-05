@@ -197,9 +197,16 @@ namespace App2NightAPI.Controllers
                     .Include(p => p.Host)
                     .First<Party>(p => p.PartyId == id);
 
-                //jsonList.Add(AddCustomJson(singleParty));
-                JObject partyJObject = AddCustomJson(singleParty);
-                return Ok(partyJObject);
+                if (singleParty == null)
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    //jsonList.Add(AddCustomJson(singleParty));
+                    JObject partyJObject = AddCustomJson(singleParty);
+                    return Ok(partyJObject);
+                }
             }
             catch (Exception)
             {
@@ -421,11 +428,11 @@ namespace App2NightAPI.Controllers
                         return Ok(AddValidStateToLocation(loc, true));
                     }
 
-                    return StatusCode(406, AddValidStateToLocation(location, false));
+                    return StatusCode(406, AddValidStateToLocation(loc, false));
                 }
                 else
                 {
-                    return StatusCode(406, AddValidStateToLocation(location, false));
+                    return StatusCode(406, AddValidStateToLocation(loc, false));
                 }
             }
         }
