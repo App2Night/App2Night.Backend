@@ -190,16 +190,16 @@ namespace App2NightAPI.Controllers
         {
             try
             {
-                List<JObject> jsonList = new List<JObject>();
+                //List<JObject> jsonList = new List<JObject>();
 
                 var singleParty = _dbContext.PartyItems
                     .Include(p => p.Location)
                     .Include(p => p.Host)
                     .First<Party>(p => p.PartyId == id);
 
-                //jsonList.Add(AddHostToJson(singleParty));
-                jsonList.Add(AddCustomJson(singleParty));
-                return Ok(jsonList);
+                //jsonList.Add(AddCustomJson(singleParty));
+                JObject partyJObject = AddCustomJson(singleParty);
+                return Ok(partyJObject);
             }
             catch (Exception)
             {
@@ -413,17 +413,19 @@ namespace App2NightAPI.Controllers
                 else if (location.CountryName == loc.CountryName &&
                          location.HouseNumber == loc.HouseNumber)
                 {
+                    //loc is not null
                     if(location.CityName == loc.CityName || 
                        loc.CityName.ToString().Contains(location.CityName.ToString()) || 
                        location.CityName.ToString().Contains(loc.CityName.ToString()))
                     {
-                        return Ok(loc);
+                        return Ok(AddValidStateToLocation(loc, true));
                     }
-                    return StatusCode(406);
+
+                    return StatusCode(406, AddValidStateToLocation(location, false));
                 }
                 else
                 {
-                    return StatusCode(406);
+                    return StatusCode(406, AddValidStateToLocation(location, false));
                 }
             }
         }
@@ -714,6 +716,20 @@ namespace App2NightAPI.Controllers
         {
             int iState = (int)Enum.Parse(state.GetType(), state.ToString());
             return iState.ToString();
+        }
+
+        private JObject AddValidStateToLocation(Location location, Boolean isValid)
+        {
+            if(location == null)
+            {
+                return null;
+            }
+            else
+            {
+                JObject partyJObject = JObject.FromObject(location);
+                partyJObject.Add("IsValid", isValid);
+                return partyJObject;
+            }
         }
         #endregion
     }

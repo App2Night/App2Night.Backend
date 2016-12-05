@@ -33,7 +33,7 @@ namespace App2NightAPI.Controllers
         /// <returns>Http Status Code 200 (Ok), or Http Status Code 400 (Bad Request), or Http Status Code 404 (Not Found) if Party doesn't exists.</returns>
         [ProducesResponseType(typeof(EventCommitmentState), 400)]
         [HttpPut]
-        [Route("commitmentState/id={id}")]
+        [Route("commitmentState")]
         public ActionResult SetCommitmentState(Guid? id, [FromBody]UserPartyCommitment commitmentState)
         {
             try
@@ -112,7 +112,7 @@ namespace App2NightAPI.Controllers
         /// <returns>Http Status Code 200 (Ok), or Http Status Code 400 (Bad Request), or Http Status Code 404 (Not Found) if Party doesn't exists.</returns>
         [ProducesResponseType(typeof(UserPartyRating), 400)]
         [HttpPut]
-        [Route("partyRating/id={id}")]
+        [Route("partyRating")]
         public ActionResult SetRating(Guid? id, [FromBody]UserPartyRating partyRating)
         {
             try
