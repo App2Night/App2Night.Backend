@@ -138,7 +138,7 @@ namespace App2NightAPI.Controllers
                                     //partyDistanceList.Add(new Tuple<Guid, double?> ( singleParty.PartyId, distance ));
 
                                     //Party is near to the user location
-                                    jsonList.Add(AddCustomJson(singleParty));
+                                    jsonList.Add(new AddPartyJSON(_dbContext,User).AddCustomJson(singleParty));
                                 }
                             }
                         }
@@ -204,7 +204,7 @@ namespace App2NightAPI.Controllers
                 else
                 {
                     //jsonList.Add(AddCustomJson(singleParty));
-                    JObject partyJObject = AddCustomJson(singleParty);
+                    JObject partyJObject = new AddPartyJSON(_dbContext, User).AddCustomJson(singleParty);
                     return Ok(partyJObject);
                 }
             }
@@ -425,14 +425,14 @@ namespace App2NightAPI.Controllers
                        loc.CityName.ToString().Contains(location.CityName.ToString()) || 
                        location.CityName.ToString().Contains(loc.CityName.ToString()))
                     {
-                        return Ok(AddValidStateToLocation(loc, true));
+                        return Ok(new AddPartyJSON(_dbContext, User).AddValidStateToLocation(loc, true));
                     }
 
-                    return StatusCode(406, AddValidStateToLocation(loc, false));
+                    return StatusCode(406, new AddPartyJSON(_dbContext, User).AddValidStateToLocation(loc, false));
                 }
                 else
                 {
-                    return StatusCode(406, AddValidStateToLocation(loc, false));
+                    return StatusCode(406, new AddPartyJSON(_dbContext, User).AddValidStateToLocation(loc, false));
                 }
             }
         }
@@ -470,7 +470,7 @@ namespace App2NightAPI.Controllers
 
                     if (party != null)
                     {
-                        jsonList.Add(AddCustomJson(party));
+                        jsonList.Add(new AddPartyJSON(_dbContext, User).AddCustomJson(party));
                     }
                 }
                 return (Ok(jsonList));
@@ -511,7 +511,7 @@ namespace App2NightAPI.Controllers
 
                     if(party != null)
                     {
-                        jsonList.Add(AddCustomJson(party));
+                        jsonList.Add(new AddPartyJSON(_dbContext, User).AddCustomJson(party));
                     }
                 }
                 return (Ok(jsonList));
@@ -554,190 +554,7 @@ namespace App2NightAPI.Controllers
             return party;
         }
 
-        private JObject AddCustomJson(Party singleParty)
-        {
-            var jobject = JObject.FromObject(singleParty);
-            AddHostToJson(ref jobject, singleParty.Host.UserId, singleParty.Host.UserName);
-            AddHostedByUserToJson(ref jobject, CheckPartyHostedByUser(singleParty));
-            AddRatingToParty(ref jobject, singleParty.PartyId);
-            AddCommitments(ref jobject, singleParty.PartyId);
-            AddUserCommitmentState(ref jobject, singleParty.PartyId);
-            return jobject;
-        }
-
-        private void AddHostToJson(ref JObject jobject, Guid UserId, String UserName)
-        {
-            //var jobject = JObject.FromObject(singleParty);
-            var host = new JObject() {
-                        {
-                            "HostId", /*singleParty.Host.*/UserId
-                        },
-                        {
-                            "UserName", /*singleParty.Host.*/UserName
-                        }
-                    };
-            jobject.Add("Host", host);
-            //return jobject;
-        }
-
-        private void AddHostedByUserToJson(ref JObject party, Boolean IsHosted)
-        {
-            party.Add("HostedByUser", IsHosted);
-            //return party;
-        }
-
-        private Boolean CheckPartyHostedByUser(Party party)
-        {
-            //Check if party is hosted by current user
-            //No logged in user wants to see some partys
-            try
-            {
-                return party.Host.UserId == User.UserId ? true : false;
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
-        }
-
-        private void AddRatingToParty(ref JObject party, Guid partyId)
-        {
-            var userRatings = _dbContext.UserPartyItems
-                .Where(up => up.PartyId == partyId)
-                .ToList();
-
-            if(userRatings != null)
-            {
-                int generalUp = 0;
-                int generalDown = 0;
-                int priceUp = 0;
-                int priceDown = 0;
-                int locationUp = 0;
-                int locationDown = 0;
-                int moodUp = 0;
-                int moodDown = 0;
-
-                foreach (UserParty up in userRatings)
-                {
-                    if(up.GeneralRating == 1)
-                    {
-                        generalUp++;
-                    }
-                    else if(up.GeneralRating == -1)
-                    {
-                        generalDown++;
-                    }
-                    if(up.PriceRating == 1)
-                    {
-                        priceUp++;
-                    }
-                    else if(up.PriceRating == -1)
-                    {
-                        priceDown++;
-                    }
-                    if(up.LocationRating == 1)
-                    {
-                        locationUp++;
-                    }
-                    else if(up.LocationRating == -1)
-                    {
-                        locationDown++;
-                    }
-                    if(up.MoodRating == 1)
-                    {
-                        moodUp++;
-                    }
-                    else if(up.MoodRating == -1)
-                    {
-                        moodDown++;
-                    }
-                }
-
-                //Add calculated values to json
-                party.Add("GeneralUpVoting", generalUp);
-                party.Add("GeneralDownVoting", generalDown);
-                party.Add("PriceUpVotring", priceUp);
-                party.Add("PriceDownVoting", priceDown);
-                party.Add("LocationUpVoting", locationUp);
-                party.Add("LocationDownVoting", locationDown);
-                party.Add("MoodUpVoting", moodUp);
-                party.Add("MoodDownVoting", moodDown);
-            }
-        }
-
-        private void AddCommitments(ref JObject party, Guid partyId)
-        {
-            JArray userArray = new JArray();
-            //Select all commitet user to the given party id
-            var commitetUser = _dbContext.UserPartyItems
-                .Where(up => up.PartyId == partyId && up.EventCommitment == Models.Enum.EventCommitmentState.Accepted)
-                .Select(u => new { u.User })
-                .ToList();
-
-            if(commitetUser != null && commitetUser.Count > 0)
-            {
-                //Add all selected users to an array with UserId and UserName
-                foreach (var up in commitetUser)
-                {
-                    var user = new JObject
-                    {
-                        {
-                            "UserId", up.User.UserId
-                        },
-                        {
-                            "UserName", up.User.UserName
-                        }
-                    };
-                    userArray.Add(user);
-                }
-            }
-            //Add the user array to the current party-JSON
-            party.Add("CommittedUser", userArray);
-        }
-
-        private void AddUserCommitmentState(ref JObject party,  Guid partyId)
-        {
-            try
-            {
-                var userCommitment = _dbContext.UserPartyItems
-                    .FirstOrDefault(p => p.PartyId == partyId && p.UserId == User.UserId);
-
-                if (userCommitment != null)
-                {
-                    party.Add("UserCommitmentState", GetValueFromEventCommitmentstate(userCommitment.EventCommitment).ToString());
-                }
-                else
-                {
-                    //Set default value
-                    party.Add("UserCommitmentState", GetValueFromEventCommitmentstate(userCommitment.EventCommitment).ToString());
-                }
-            }
-            catch(Exception)
-            {
-                //Set default commitmentstate by definition
-                party.Add("UserCommitmentState", GetValueFromEventCommitmentstate(EventCommitmentState.Rejected).ToString());
-            }
-        }
-
-        private String GetValueFromEventCommitmentstate(EventCommitmentState state)
-        {
-            int iState = (int)Enum.Parse(state.GetType(), state.ToString());
-            return iState.ToString();
-        }
-
-        private JObject AddValidStateToLocation(Location location, Boolean isValid)
-        {
-            if(location == null)
-            {
-                return null;
-            }
-            else
-            {
-                JObject partyJObject = JObject.FromObject(location);
-                partyJObject.Add("IsValid", isValid);
-                return partyJObject;
-            }
-        }
+        
         #endregion
     }
 }

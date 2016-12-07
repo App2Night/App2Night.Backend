@@ -12,6 +12,8 @@ using UserServer.Database;
 using UserServer.Models;
 using System.Web.Http;
 using UserServer.Services;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace UserServer.Controllers
 {
@@ -23,13 +25,15 @@ namespace UserServer.Controllers
         private readonly IEmailSender _emailSender;
         private readonly ILogger _logger;
         private DatabaseContext _dbContext;
+        private readonly RoleManager<IdentityRole<Guid>> _roleManager;
 
         public UserController(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
             IEmailSender emailSender,
             ILoggerFactory loggerFactory,
-            DatabaseContext dbContext)
+            DatabaseContext dbContext,
+            RoleManager<IdentityRole<Guid>> roleManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -37,6 +41,8 @@ namespace UserServer.Controllers
             _logger = loggerFactory.CreateLogger<UserController>();
 
             _dbContext = dbContext;
+
+            _roleManager = roleManager;
         }
 
         //  POST /api/User
@@ -51,6 +57,7 @@ namespace UserServer.Controllers
         public async Task<ActionResult> Register([FromBody]Login value)
         {
             var user = new User { UserName = value.Username, Email = value.Email };
+
             if (user.Email.Contains("@"))
             {
                 var result = await _userManager.CreateAsync(user, value.Password);
@@ -58,6 +65,11 @@ namespace UserServer.Controllers
                 if (result.Succeeded)
                 {
                     var t = await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("email", user.Email));
+                    //List<Claim> claims = new List<Claim>();
+                    //claims.Add(new Claim(ClaimTypes.Email, user.Email));
+                    //claims.Add(new Claim(ClaimTypes.Role, "Administrator"));
+                    //var t = await _userManager.AddClaimsAsync(user, claims);
+                    //await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(ClaimTypes.Role, "Administrator"));
                     // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
                     // Send an email with this link
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -159,8 +171,6 @@ namespace UserServer.Controllers
         /// <returns>Http Status Code 401 (Unauthorized) if the token isn't valid, or Http Status Code 404 (Not found) if the user won't exist in the database,
         /// or Http Status Code 400 (Bad Request) if user cannot be deleted, or Http Status Code 200 (Ok) if everything works well.</returns>
         [HttpDelete("id={id}")]
-        //[HttpDelete]
-        [Authorize]
         public async Task<ActionResult> Delete(Guid? id)
         {
             try
@@ -200,5 +210,19 @@ namespace UserServer.Controllers
                 return BadRequest();
             }
         }
+
+        //private void CreateNewRoleExample()
+        //{
+        //    if (!_roleManager.RoleExistsAsync("Administrator").Result)
+        //    {
+        //        IdentityRole<Guid> ir = new IdentityRole<Guid>();
+        //        ir.Name = "Administrator";
+        //        IdentityResult res = _roleManager.CreateAsync(ir).Result;
+        //        if (res.Succeeded)
+        //        {
+
+        //        }
+        //    }
+        //}
     }
 }
