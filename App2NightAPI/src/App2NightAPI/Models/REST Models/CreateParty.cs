@@ -32,5 +32,6 @@ namespace App2NightAPI.Models.REST_Models
         public PartyType PartyType { get; set; }
         [Required]
         public string Description { get; set; }
+        public int Price { get; set; }
     }
 }

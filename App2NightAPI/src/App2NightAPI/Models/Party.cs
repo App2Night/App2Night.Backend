@@ -23,7 +23,6 @@ namespace App2NightAPI.Models
         public string PartyName { get; set; }
         [JsonIgnore]
         public DateTime CreationDate { get; set; }
-        public int Price { get; set; }
         [JsonIgnore]
         public User Host { get; set; }
         [Required]
@@ -37,5 +36,6 @@ namespace App2NightAPI.Models
         public string Description { get; set; }
         [Required]
         public Location Location { get; set; }
+        public int Price { get; set; }
     }
 }

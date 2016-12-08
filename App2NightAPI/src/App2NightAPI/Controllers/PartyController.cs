@@ -543,6 +543,7 @@ namespace App2NightAPI.Controllers
                 };
             party.PartyType = value.PartyType;
             party.Description = value.Description;
+            party.Price = value.Price;
         }
 
         private Party MapPartyToModel(CreateParty value)

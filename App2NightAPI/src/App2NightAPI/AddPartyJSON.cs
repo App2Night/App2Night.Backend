@@ -168,25 +168,25 @@ namespace App2NightAPI
 
                 if (userCommitment != null)
                 {
-                    party.Add("UserCommitmentState", GetValueFromEventCommitmentstate(userCommitment.EventCommitment).ToString());
+                    party.Add("UserCommitmentState", GetValueFromEventCommitmentstate(userCommitment.EventCommitment));
                 }
                 else
                 {
                     //Set default value
-                    party.Add("UserCommitmentState", GetValueFromEventCommitmentstate(userCommitment.EventCommitment).ToString());
+                    party.Add("UserCommitmentState", GetValueFromEventCommitmentstate(userCommitment.EventCommitment));
                 }
             }
             catch (Exception)
             {
                 //Set default commitmentstate by definition
-                party.Add("UserCommitmentState", GetValueFromEventCommitmentstate(EventCommitmentState.Rejected).ToString());
+                party.Add("UserCommitmentState", GetValueFromEventCommitmentstate(EventCommitmentState.Rejected));
             }
         }
 
-        private String GetValueFromEventCommitmentstate(EventCommitmentState state)
+        private int GetValueFromEventCommitmentstate(EventCommitmentState state)
         {
-            int iState = (int)Enum.Parse(state.GetType(), state.ToString());
-            return iState.ToString();
+            return (int)Enum.Parse(state.GetType(), state.ToString());
+            //return iState.ToString();
         }
 
         public JObject AddValidStateToLocation(Location location, Boolean isValid)

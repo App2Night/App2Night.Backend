@@ -13,5 +13,6 @@ namespace App2NightAPI.Models.Model_Abstraction
         MusicGenre MusicGenre { get; set; }
         PartyType PartyType { get; set; }
         string Description { get; set; }
+        int Price { get; set; }
     }
 }

@@ -44,6 +44,7 @@ namespace App2NightAPI.Controllers
                     //Location + Host not as array
                     JObject tempJobject = new JObject();
                     tempJobject = new AddPartyJSON(_dbContext, User).AddCustomJson(singleParty);
+                    tempJobject.Remove("CommittedUser");
                     tempJobject.Remove("Location");
                     tempJobject.Remove("Host");
                     string locationString = singleParty.Location.StreetName + " " + singleParty.Location.HouseNumber + ", " + singleParty.Location.Zipcode + " " + singleParty.Location.CityName + ", " + singleParty.Location.CountryName;
