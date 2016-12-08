@@ -41,7 +41,17 @@ namespace App2NightAPI.Controllers
             {
                 foreach (Party singleParty in partys)
                 {
-                    jsonList.Add(new AddPartyJSON(_dbContext, User).AddCustomJson(singleParty));
+                    //Location + Host not as array
+                    JObject tempJobject = new JObject();
+                    tempJobject = new AddPartyJSON(_dbContext, User).AddCustomJson(singleParty);
+                    tempJobject.Remove("Location");
+                    tempJobject.Remove("Host");
+                    string locationString = singleParty.Location.StreetName + " " + singleParty.Location.HouseNumber + ", " + singleParty.Location.Zipcode + " " + singleParty.Location.CityName + ", " + singleParty.Location.CountryName;
+                    tempJobject.Add("Location", locationString);
+                    string hostString = singleParty.Host.UserName + " " + singleParty.Host.Email;
+                    tempJobject.Add("Host", hostString);
+
+                    jsonList.Add(tempJobject);
                 }
             }
                 return Ok(jsonList);   
