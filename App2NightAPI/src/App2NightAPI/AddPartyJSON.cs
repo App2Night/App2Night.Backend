@@ -29,6 +29,13 @@ namespace App2NightAPI
             return jobject;
         }
 
+        public JObject AddCustomJsonForAdmin(Party singleParty)
+        {
+            var jobject = JObject.FromObject(singleParty);
+            AddRatingToParty(ref jobject, singleParty.PartyId, true);
+            return jobject;
+        }
+
         private void AddHostToJson(ref JObject jobject, Guid UserId, String UserName)
         {
             //var jobject = JObject.FromObject(singleParty);
@@ -64,68 +71,94 @@ namespace App2NightAPI
             }
         }
 
-        private void AddRatingToParty(ref JObject party, Guid partyId)
+        private void AddRatingToParty(ref JObject party, Guid partyId, Boolean JustGeneralVoting = false)
         {
-            var userRatings = _dbContext.UserPartyItems
-                .Where(up => up.PartyId == partyId)
-                .ToList();
+            int generalUp = 0;
+            int generalDown = 0;
+            int priceUp = 0;
+            int priceDown = 0;
+            int locationUp = 0;
+            int locationDown = 0;
+            int moodUp = 0;
+            int moodDown = 0;
 
-            if (userRatings != null)
+            if (!JustGeneralVoting)
             {
-                int generalUp = 0;
-                int generalDown = 0;
-                int priceUp = 0;
-                int priceDown = 0;
-                int locationUp = 0;
-                int locationDown = 0;
-                int moodUp = 0;
-                int moodDown = 0;
+                var userRatings = _dbContext.UserPartyItems
+                    .Where(up => up.PartyId == partyId)
+                    .ToList();
 
-                foreach (UserParty up in userRatings)
+                if (userRatings != null)
                 {
-                    if (up.GeneralRating == 1)
+                    foreach (UserParty up in userRatings)
                     {
-                        generalUp++;
+                        if (up.GeneralRating == 1)
+                        {
+                            generalUp++;
+                        }
+                        else if (up.GeneralRating == -1)
+                        {
+                            generalDown++;
+                        }
+                        if (up.PriceRating == 1)
+                        {
+                            priceUp++;
+                        }
+                        else if (up.PriceRating == -1)
+                        {
+                            priceDown++;
+                        }
+                        if (up.LocationRating == 1)
+                        {
+                            locationUp++;
+                        }
+                        else if (up.LocationRating == -1)
+                        {
+                            locationDown++;
+                        }
+                        if (up.MoodRating == 1)
+                        {
+                            moodUp++;
+                        }
+                        else if (up.MoodRating == -1)
+                        {
+                            moodDown++;
+                        }
                     }
-                    else if (up.GeneralRating == -1)
+
+                    //Add calculated values to json
+                    party.Add("GeneralUpVoting", generalUp);
+                    party.Add("GeneralDownVoting", generalDown);
+                    party.Add("PriceUpVotring", priceUp);
+                    party.Add("PriceDownVoting", priceDown);
+                    party.Add("LocationUpVoting", locationUp);
+                    party.Add("LocationDownVoting", locationDown);
+                    party.Add("MoodUpVoting", moodUp);
+                    party.Add("MoodDownVoting", moodDown);
+                }
+            }
+            else if(JustGeneralVoting)
+            {
+                var userRatings = _dbContext.UserPartyItems
+                    .Where(p => p.PartyId == partyId)
+                    .ToList();
+
+                if(userRatings != null)
+                {
+                    foreach(UserParty up in userRatings)
                     {
-                        generalDown++;
-                    }
-                    if (up.PriceRating == 1)
-                    {
-                        priceUp++;
-                    }
-                    else if (up.PriceRating == -1)
-                    {
-                        priceDown++;
-                    }
-                    if (up.LocationRating == 1)
-                    {
-                        locationUp++;
-                    }
-                    else if (up.LocationRating == -1)
-                    {
-                        locationDown++;
-                    }
-                    if (up.MoodRating == 1)
-                    {
-                        moodUp++;
-                    }
-                    else if (up.MoodRating == -1)
-                    {
-                        moodDown++;
+                        if (up.GeneralRating == 1)
+                        {
+                            generalUp++;
+                        }
+                        else if (up.GeneralRating == -1)
+                        {
+                            generalDown++;
+                        }
                     }
                 }
-
-                //Add calculated values to json
                 party.Add("GeneralUpVoting", generalUp);
                 party.Add("GeneralDownVoting", generalDown);
-                party.Add("PriceUpVotring", priceUp);
-                party.Add("PriceDownVoting", priceDown);
-                party.Add("LocationUpVoting", locationUp);
-                party.Add("LocationDownVoting", locationDown);
-                party.Add("MoodUpVoting", moodUp);
-                party.Add("MoodDownVoting", moodDown);
             }
         }
 
