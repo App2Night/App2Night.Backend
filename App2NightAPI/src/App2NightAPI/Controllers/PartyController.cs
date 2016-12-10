@@ -26,59 +26,6 @@ namespace App2NightAPI.Controllers
             _dbContext = dbContext;
         }
 
-        //// GET api/Party
-        ///// <summary>
-        ///// Get Partys
-        ///// </summary>
-        ///// <remarks>
-        ///// This function will return partys from the database where the date is today or in futre with the related rating.
-        ///// </remarks>
-        ///// <returns></returns>
-        //[AllowAnonymous]
-        //[HttpGet]
-        //public ActionResult Get()
-        //{
-        //    try
-        //    {
-        //        //Test
-        //        List<JObject> jsonList = new List<JObject>();
-
-        //        var partys = _dbContext.PartyItems
-        //            .Where(p => p.PartyDate >= DateTime.Today)
-        //            .Include(p => p.Location)
-        //            .Include(p => p.Host).ToList();
-
-        //        if (partys == null)
-        //        {
-        //            return NotFound("There are no partys in the future.");
-        //        }
-        //        else
-        //        {
-        //            foreach (Party singleParty in partys)
-        //            {
-        //                if (singleParty.Location.Latitude == 0 || singleParty.Location.Longitude == 0)
-        //                {
-        //                    //Party without geocoordinates
-        //                }
-        //                else
-        //                {
-
-        //                }
-
-        //                jsonList.Add(AddCustomJson(singleParty));
-        //                //TODO
-        //                //jsonList.Add(AddHostToJson(singleParty));
-        //            }
-
-        //            return Ok(jsonList);
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return null;
-        //    }
-        //}
-
         // GET api/Party
         /// <summary>
         /// Get Partys by user location.
@@ -246,7 +193,7 @@ namespace App2NightAPI.Controllers
                 else
                 {
                     //Party is valid and is added to database.
-                    var party = MapPartyToModel(value);
+                    var party = new Helper(User).MapPartyToModel(value);
                     _dbContext.PartyItems.Add(party);
                     _dbContext.SaveChanges();
                     return Created("", party.PartyId);
@@ -313,7 +260,7 @@ namespace App2NightAPI.Controllers
                     else
                     {
                         //Party is valid.
-                        MapPartyToModel(value, ref party);
+                        new Helper(User).MapPartyToModel(value, ref party);
 
                         _dbContext.PartyItems.Update(party);
                         _dbContext.SaveChanges();
@@ -517,45 +464,5 @@ namespace App2NightAPI.Controllers
                 return (Ok(jsonList));
             }
         }
-
-        #region Help Functions
-        private void MapPartyToModel(CreateParty value, ref Party party)
-        {
-            Location loc = null;
-            Task.WaitAll(Task.Run(async () => loc = await GeoCoding.GetLocationByAdress(value.HouseNumber, value.StreetName, value.CityName)));
-            if(loc == null)
-            {
-                throw new Exception("Location not found.");
-            }
-
-            party.PartyName = value.PartyName;
-            party.PartyDate = value.PartyDate.Millisecond == 0 ? value.PartyDate.AddMilliseconds(01.123) : value.PartyDate;
-            party.MusicGenre = value.MusicGenre;
-                party.Location = new Location()
-                {
-                    CityName = value.CityName,
-                    HouseNumber = value.HouseNumber,
-                    StreetName = value.StreetName,
-                    CountryName = value.CountryName,
-                    Zipcode = value.Zipcode,
-                    Latitude = loc.Latitude,
-                    Longitude = loc.Longitude,
-                };
-            party.PartyType = value.PartyType;
-            party.Description = value.Description;
-            party.Price = value.Price;
-        }
-
-        private Party MapPartyToModel(CreateParty value)
-        {
-            var party = new Party();
-            MapPartyToModel(value, ref party);
-            party.Host = User;
-            party.CreationDate = DateTime.Today;
-            return party;
-        }
-
-        
-        #endregion
     }
 }

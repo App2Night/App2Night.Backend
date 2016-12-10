@@ -93,7 +93,7 @@ namespace App2NightAPI.Controllers
                     else
                     {
                         //Party is valid.
-                        MapPartyToModel(value, ref party);
+                        new Helper(User).MapPartyToModel(value, ref party);
 
                         _dbContext.PartyItems.Update(party);
                         _dbContext.SaveChanges();
@@ -154,32 +154,32 @@ namespace App2NightAPI.Controllers
         }
 
         //TODO Seperate class for help functions!!!
-        private void MapPartyToModel(CreateParty value, ref Party party)
-        {
-            Location loc = null;
-            Task.WaitAll(Task.Run(async () => loc = await GeoCoding.GetLocationByAdress(value.HouseNumber, value.StreetName, value.CityName)));
-            if (loc == null)
-            {
-                throw new Exception("Location not found.");
-            }
+        //private void MapPartyToModel(CreateParty value, ref Party party)
+        //{
+        //    Location loc = null;
+        //    Task.WaitAll(Task.Run(async () => loc = await GeoCoding.GetLocationByAdress(value.HouseNumber, value.StreetName, value.CityName)));
+        //    if (loc == null)
+        //    {
+        //        throw new Exception("Location not found.");
+        //    }
 
-            party.PartyName = value.PartyName;
-            party.PartyDate = value.PartyDate.Millisecond == 0 ? value.PartyDate.AddMilliseconds(01.123) : value.PartyDate;
-            party.MusicGenre = value.MusicGenre;
-            party.Location = new Location()
-            {
-                CityName = value.CityName,
-                HouseNumber = value.HouseNumber,
-                StreetName = value.StreetName,
-                CountryName = value.CountryName,
-                Zipcode = value.Zipcode,
-                Latitude = loc.Latitude,
-                Longitude = loc.Longitude,
-            };
-            party.PartyType = value.PartyType;
-            party.Description = value.Description;
-            party.Price = value.Price;
-        }
+        //    party.PartyName = value.PartyName;
+        //    party.PartyDate = value.PartyDate.Millisecond == 0 ? value.PartyDate.AddMilliseconds(01.123) : value.PartyDate;
+        //    party.MusicGenre = value.MusicGenre;
+        //    party.Location = new Location()
+        //    {
+        //        CityName = value.CityName,
+        //        HouseNumber = value.HouseNumber,
+        //        StreetName = value.StreetName,
+        //        CountryName = value.CountryName,
+        //        Zipcode = value.Zipcode,
+        //        Latitude = loc.Latitude,
+        //        Longitude = loc.Longitude,
+        //    };
+        //    party.PartyType = value.PartyType;
+        //    party.Description = value.Description;
+        //    party.Price = value.Price;
+        //}
 
         [HttpGet("GetUser")]
         public ActionResult GetUser()
