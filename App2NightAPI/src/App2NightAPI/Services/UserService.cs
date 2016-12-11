@@ -8,11 +8,26 @@ using App2NightAPI.Models;
 
 namespace App2NightAPI
 {
+    /// <summary>
+    /// This class provides the communication between the API and the User Server.
+    /// </summary>
     public class UserService : IUserService
     {
+        /// <summary>
+        /// Returns the UserID of the current user.
+        /// </summary>
         public Guid UserID { get; }
+        /// <summary>
+        /// Returns the Name of the current user.
+        /// </summary>
         public Guid Name { get; }
 
+        /// <summary>
+        /// Transform the current user from the User Server and store relevant information in the database of the API.
+        /// </summary>
+        /// <param name="dbContext">Database Context</param>
+        /// <param name="pUser">Current User as ClaimsPrincipal</param>
+        /// <returns></returns>
         public User GetUser(DatabaseContext dbContext, ClaimsPrincipal pUser)
         {
             try

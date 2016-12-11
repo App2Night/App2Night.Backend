@@ -10,19 +10,33 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+
 namespace App2NightAPI.Controllers
 {
+    /// <summary>
+    /// Administrator Controller for the Admin-Panel. All routes are only accessible with the administrator user.
+    /// </summary>
     [ApiExplorerSettings(IgnoreApi = true)]
     [Route("api/admin")]
     [Authorize(Roles = "Administrator")]
     public class AdminController : CustomController
     {
         private DatabaseContext _dbContext;
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="dbContext">Database Context</param>
+        /// <param name="userService">User Service for interaction with User Server</param>
         public AdminController(DatabaseContext dbContext, IUserService userService) : base(dbContext, userService)
         {
             _dbContext = dbContext;
         }
 
+        // GET /api/admin/getpartys
+        /// <summary>
+        /// Modified GET-Party route.
+        /// </summary>
+        /// <returns>Functions returns all parties with location and host.</returns>
         [HttpGet("GetPartys")]
         public ActionResult GetPartys()
         {
@@ -58,6 +72,13 @@ namespace App2NightAPI.Controllers
                 return Ok(jsonList);   
         }
 
+        // PUT /api/admin/modifyparty
+        /// <summary>
+        /// Modified PUT-Party route. Not only host is able to change the party.
+        /// </summary>
+        /// <param name="id">PartyId</param>
+        /// <param name="value">CreateParty-Object</param>
+        /// <returns>Http Status Code 200 (Ok), or Http Status Code 400 (Bad Request), or Http Status Code 404 (Not Found) if Party ID don't exists.</returns>
         [HttpPut("modifyParty")]
         public ActionResult Modify(Guid? id, [FromBody]CreateParty value)
         {
@@ -107,6 +128,12 @@ namespace App2NightAPI.Controllers
             }
         }
 
+        //DELETE /api/admin/deleteparty
+        /// <summary>
+        /// Modified DELETE-Party route. Not only the host can delete parties and parties in the past can be deleted.
+        /// </summary>
+        /// <param name="id">PartyId</param>
+        /// <returns>Http Status Code 200 (Ok), or Http Status Code 400 (Bad Request), or Http Status Code 404 (Not Found) if Party ID don't exists.</returns>
         [HttpDelete("deleteParty")]
         public ActionResult Delete(Guid? id)
         {
@@ -131,11 +158,6 @@ namespace App2NightAPI.Controllers
                     {
                         return NotFound("Party not found.");
                     }
-                    //Check if the Date of the party is valid.
-                    else if (party.PartyDate < DateTime.Now)
-                    {
-                        return BadRequest("Can't delete. Party date is in the past.");
-                    }
                     else
                     {
                         //Party is valid.
@@ -153,34 +175,11 @@ namespace App2NightAPI.Controllers
             return Ok();
         }
 
-        //TODO Seperate class for help functions!!!
-        //private void MapPartyToModel(CreateParty value, ref Party party)
-        //{
-        //    Location loc = null;
-        //    Task.WaitAll(Task.Run(async () => loc = await GeoCoding.GetLocationByAdress(value.HouseNumber, value.StreetName, value.CityName)));
-        //    if (loc == null)
-        //    {
-        //        throw new Exception("Location not found.");
-        //    }
-
-        //    party.PartyName = value.PartyName;
-        //    party.PartyDate = value.PartyDate.Millisecond == 0 ? value.PartyDate.AddMilliseconds(01.123) : value.PartyDate;
-        //    party.MusicGenre = value.MusicGenre;
-        //    party.Location = new Location()
-        //    {
-        //        CityName = value.CityName,
-        //        HouseNumber = value.HouseNumber,
-        //        StreetName = value.StreetName,
-        //        CountryName = value.CountryName,
-        //        Zipcode = value.Zipcode,
-        //        Latitude = loc.Latitude,
-        //        Longitude = loc.Longitude,
-        //    };
-        //    party.PartyType = value.PartyType;
-        //    party.Description = value.Description;
-        //    party.Price = value.Price;
-        //}
-
+        // GET /api/admin/getuser
+        /// <summary>
+        /// Functions returns the all registered users.
+        /// </summary>
+        /// <returns>Http Status Code 200 (Ok) and a list of users, or Http Status Code 404 (Not Found) if there are no users.</returns>
         [HttpGet("GetUser")]
         public ActionResult GetUser()
         {
@@ -189,7 +188,7 @@ namespace App2NightAPI.Controllers
 
             if(users == null || users.Count == 0)
             {
-                return BadRequest("No users found.");
+                return NotFound("No users found.");
             }
             else
             {

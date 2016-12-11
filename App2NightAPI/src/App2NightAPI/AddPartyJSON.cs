@@ -9,15 +9,30 @@ using System.Threading.Tasks;
 
 namespace App2NightAPI
 {
+    /// <summary>
+    /// Adds calculated values to the JSON-Object of a party.
+    /// </summary>
     public class AddPartyJSON
     {
         private DatabaseContext _dbContext;
         private User _user;
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="dbContext">Databse Context</param>
+        /// <param name="user">Current User</param>
         public AddPartyJSON(DatabaseContext dbContext, User user)
         {
             _dbContext = dbContext;
             _user = user;
         }
+
+        /// <summary>
+        /// Function call all other functions which are needed in the PartyController to add all relevant information.
+        /// </summary>
+        /// <param name="singleParty">Party-Object to edit</param>
+        /// <returns>Party as JObject</returns>
         public JObject AddCustomJson(Party singleParty)
         {
             var jobject = JObject.FromObject(singleParty);
@@ -29,6 +44,11 @@ namespace App2NightAPI
             return jobject;
         }
 
+        /// <summary>
+        /// Function call other functions which are needed in the AdminController to add all relevant information.
+        /// </summary>
+        /// <param name="singleParty">Party-Object to edit</param>
+        /// <returns>Party as JObject</returns>
         public JObject AddCustomJsonForAdmin(Party singleParty)
         {
             var jobject = JObject.FromObject(singleParty);
@@ -222,6 +242,12 @@ namespace App2NightAPI
             //return iState.ToString();
         }
 
+        /// <summary>
+        /// Transofrm a location-Object to a JObject and adds the given boolean paramter to this JObject.
+        /// </summary>
+        /// <param name="location">Location-Object</param>
+        /// <param name="isValid">true or false</param>
+        /// <returns>Location as JObject</returns>
         public JObject AddValidStateToLocation(Location location, Boolean isValid)
         {
             if (location == null)

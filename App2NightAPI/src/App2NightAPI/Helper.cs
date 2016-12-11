@@ -8,15 +8,27 @@ using System.Threading.Tasks;
 
 namespace App2NightAPI
 {
+    /// <summary>
+    /// This class will provide help functions which are needed in different classes.
+    /// </summary>
     public class Helper
     {
         private User _user;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="user">Current User</param>
         public Helper(User user)
         {
             _user = user;
         }
 
+        /// <summary>
+        /// Function will check the location and map a CreatePartyModel-Object to a exsiting PartyModel-Object
+        /// </summary>
+        /// <param name="value">CreateParty-Object</param>
+        /// <param name="party">Party-Object</param>
         public void MapPartyToModel(CreateParty value, ref Party party)
         {
             Location loc = null;
@@ -44,6 +56,12 @@ namespace App2NightAPI
             party.Price = value.Price;
         }
 
+        /// <summary>
+        /// Function will check the location and map the CreateParty-Object to a new Party-Object
+        /// and add the current user as host of the party.
+        /// </summary>
+        /// <param name="value">CreateParty-Object</param>
+        /// <returns></returns>
         public Party MapPartyToModel(CreateParty value)
         {
             var party = new Party();

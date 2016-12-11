@@ -11,16 +11,23 @@ using System.Threading.Tasks;
 
 namespace App2NightAPI.Controllers
 {
+    /// <summary>
+    /// This Controller provide operations between a user and a party.
+    /// </summary>
     [Route("api/UserParty")]
     [Authorize]
     public class UserPartyController : CustomController
     {
         private DatabaseContext _dbContext;
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="dbContext">Database Context</param>
+        /// <param name="userService">User Service for interaction with User Server</param>
         public UserPartyController(DatabaseContext dbContext, IUserService userService) : base(dbContext, userService)
         {
             _dbContext = dbContext;
         }
-
 
         // PUT /api/UserParty/commitmentState
         /// <summary>

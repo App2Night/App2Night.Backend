@@ -11,11 +11,20 @@ using System.Threading.Tasks;
 
 namespace App2NightAPI
 {
+    /// <summary>
+    /// This class provides the connection to the google api for checking the location and the geocoding operations.
+    /// </summary>
     public class GeoCoding
     {
         private static HttpClient client;
         private static readonly string httpUrl = "https://maps.googleapis.com/maps/api/geocode/json?";
 
+        /// <summary>
+        /// Detect the adress to the given latitude and longitude by calling the google api.
+        /// </summary>
+        /// <param name="lat">Latitude</param>
+        /// <param name="lon">Longitude</param>
+        /// <returns>Null if google api  throws an error, or a location-object if everything works well.</returns>
         public static async Task<Location> GetLocationByCoordinates(double lat, double lon)
         {
             if (lat != 0 && lon != 0)
@@ -41,6 +50,13 @@ namespace App2NightAPI
             }
         }
 
+        /// <summary>
+        /// Detect the coordinates according to the given parameters via google api.
+        /// </summary>
+        /// <param name="housNo">House Number</param>
+        /// <param name="street">Street</param>
+        /// <param name="cityName">City name</param>
+        /// <returns>Null if google api  throws an error, or a location-object with coordinates if everything works well.</returns>
         public static async Task<Location> GetLocationByAdress(string housNo, string street, string cityName)
         {
             String Url = httpUrl + "address=" + housNo + "+" + street + "+" + cityName + "&language=DE&key=" + new Secrets().GoogleMapsApiKey;
@@ -147,6 +163,14 @@ namespace App2NightAPI
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
+        /// <summary>
+        /// Function will calculate the distance between two points.
+        /// </summary>
+        /// <param name="lat1">Latitude 1</param>
+        /// <param name="lon1">Longitude 1</param>
+        /// <param name="lat2">Latitude 2</param>
+        /// <param name="lon2">Longitude 2</param>
+        /// <returns></returns>
         public static double? GetDistance(double lat1, double lon1, double lat2, double lon2)
         {
             try

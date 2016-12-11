@@ -15,12 +15,20 @@ using App2NightAPI.Models.Enum;
 
 namespace App2NightAPI.Controllers
 {
+    /// <summary>
+    /// This Controller provides all party operations like GET, PUT, POST, DELETE.
+    /// </summary>
     [Route("api/Party")]
     [Authorize]
     public class PartyController : CustomController
     {
         private readonly int maxResults = 50;
         private DatabaseContext _dbContext;
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="dbContext">Databse Context</param>
+        /// <param name="userService">User Service for interaction with User Server</param>
         public PartyController(DatabaseContext dbContext, IUserService userService) : base(dbContext, userService)
         {
             _dbContext = dbContext;
