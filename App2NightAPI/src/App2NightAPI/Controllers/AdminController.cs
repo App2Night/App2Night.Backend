@@ -192,20 +192,20 @@ namespace App2NightAPI.Controllers
         /// <summary>
         /// Function retunrs all the UserParty-Items to a given User.
         /// </summary>
-        /// <param name="UserId"></param>
+        /// <param name="id"></param>
         /// <returns>Http Status Code 200 (Ok) and a list of UserParty-Items, or Http Status Code 404 (Not Found) if there are no Userparty-Items, 
         /// or Http Status Code 400 (Bad Request) if the UserId is not valid.</returns>
         [HttpGet("GetUserParties")]
-        public ActionResult GetUserParties(Guid? UserId)
+        public ActionResult GetUserParties(Guid? id)
         {
-            if(!Validator.IsGuidValid(UserId.ToString()))
+            if(!Validator.IsGuidValid(id.ToString()))
             {
                 return BadRequest("UserId is not valid.");
             }
             else
             {
                 var userParties = _dbContext.UserPartyItems
-                    .Select(up => up.UserId == UserId)
+                    .Select(up => up.UserId == id)
                     .ToList();
 
                 if(userParties == null || userParties.Count == 0)
