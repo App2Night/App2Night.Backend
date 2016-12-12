@@ -101,12 +101,6 @@ namespace App2NightAPI.Controllers
                     {
                         return NotFound("Party not found.");
                     }
-                    //Check if Party Date is toady or in future
-                    else if (value.PartyDate <= DateTime.Today)
-                    {
-                        //Party Date is not today or in future
-                        return BadRequest("Party has to be in the future.");
-                    }
                     else if (!TryValidateModel(party))
                     {
                         return BadRequest(new CreateParty());
@@ -137,11 +131,10 @@ namespace App2NightAPI.Controllers
         [HttpDelete("deleteParty")]
         public ActionResult Delete(Guid? id)
         {
-            Guid partyId;
             try
             {
                 //Check if Party Id is valid
-                if (!Guid.TryParse(id.ToString(), out partyId))
+                if (!Validator.IsGuidValid(id.ToString()))
                 {
                     //Can't parse Party ID
                     return BadRequest("Party ID is not valid.");
@@ -193,6 +186,36 @@ namespace App2NightAPI.Controllers
             else
             {
                 return Ok(users);
+            }
+        }
+
+        /// <summary>
+        /// Function retunrs all the UserParty-Items to a given User.
+        /// </summary>
+        /// <param name="UserId"></param>
+        /// <returns>Http Status Code 200 (Ok) and a list of UserParty-Items, or Http Status Code 404 (Not Found) if there are no Userparty-Items, 
+        /// or Http Status Code 400 (Bad Request) if the UserId is not valid.</returns>
+        [HttpGet("GetUserParties")]
+        public ActionResult GetUserParties(Guid? UserId)
+        {
+            if(!Validator.IsGuidValid(UserId.ToString()))
+            {
+                return BadRequest("UserId is not valid.");
+            }
+            else
+            {
+                var userParties = _dbContext.UserPartyItems
+                    .Select(up => up.UserId == UserId)
+                    .ToList();
+
+                if(userParties == null || userParties.Count == 0)
+                {
+                    return NotFound("No UserParty-Items found.");
+                }
+                else
+                {
+                    return Ok(userParties);
+                }
             }
         }
     }
