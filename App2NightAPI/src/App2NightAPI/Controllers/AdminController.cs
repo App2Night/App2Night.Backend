@@ -205,7 +205,10 @@ namespace App2NightAPI.Controllers
             else
             {
                 var userParties = _dbContext.UserPartyItems
-                    .Select(up => up.UserId == id)
+                    .Include(p => p.Party)
+                        .ThenInclude(pl => pl.Location)
+                    .Include(u => u.User)
+                    .Where(up => up.UserId == id)
                     .ToList();
 
                 if(userParties == null || userParties.Count == 0)
@@ -214,7 +217,29 @@ namespace App2NightAPI.Controllers
                 }
                 else
                 {
-                    return Ok(userParties);
+                    List<JObject> jarray = new List<JObject>();
+
+                    foreach(UserParty singleUP in userParties)
+                    {
+                        JObject partyJObject = new JObject();
+                        partyJObject.Add("UserId", singleUP.UserId);
+                        string user = singleUP.User.UserName + " " + singleUP.User.Email;
+                        partyJObject.Add("User", user);
+                        partyJObject.Add("PartyId", singleUP.PartyId);
+                        string partyName = singleUP.Party.PartyName;
+                        partyJObject.Add("PartyName", partyName);
+                        string locationString = singleUP.Party.Location.StreetName + " " + singleUP.Party.Location.HouseNumber + ", " + singleUP.Party.Location.Zipcode + " " + singleUP.Party.Location.CityName + ", " + singleUP.Party.Location.CountryName;
+                        partyJObject.Add("Location", locationString);
+                        string hostString = singleUP.Party.Host.UserName + " " + singleUP.Party.Host.Email;
+                        partyJObject.Add("Host", hostString);
+                        partyJObject.Add("EventCommitment", singleUP.EventCommitment.ToString());
+                        partyJObject.Add("GeneralRating", singleUP.GeneralRating);
+                        partyJObject.Add("PriceRating", singleUP.PriceRating);
+                        partyJObject.Add("LocationRating", singleUP.LocationRating);
+                        partyJObject.Add("MoodRating", singleUP.LocationRating);
+                        jarray.Add(partyJObject);
+                    }
+                    return Ok(jarray);
                 }
             }
         }
