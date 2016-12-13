@@ -53,6 +53,7 @@ namespace App2NightAPI.Controllers
             }
             else
             {
+                partys = partys.OrderByDescending(p => p.PartyDate).ToList();
                 foreach (Party singleParty in partys)
                 {
                     //Location + Host not as array
