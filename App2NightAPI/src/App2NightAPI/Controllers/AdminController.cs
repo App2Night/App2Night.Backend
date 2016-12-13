@@ -206,7 +206,9 @@ namespace App2NightAPI.Controllers
             {
                 var userParties = _dbContext.UserPartyItems
                     .Include(p => p.Party)
-                        .ThenInclude(pl => pl.Location)
+                        .ThenInclude(p => p.Host)
+                    .Include(p => p.Party)
+                        .ThenInclude(p => p.Location)
                     .Include(u => u.User)
                     .Where(up => up.UserId == id)
                     .ToList();
@@ -228,6 +230,8 @@ namespace App2NightAPI.Controllers
                         partyJObject.Add("PartyId", singleUP.PartyId);
                         string partyName = singleUP.Party.PartyName;
                         partyJObject.Add("PartyName", partyName);
+                        string partyDate = singleUP.Party.PartyDate.ToString("dd.MM.yyyy hh:mm:ss");
+                        partyJObject.Add("PartyDate", partyDate);
                         string locationString = singleUP.Party.Location.StreetName + " " + singleUP.Party.Location.HouseNumber + ", " + singleUP.Party.Location.Zipcode + " " + singleUP.Party.Location.CityName + ", " + singleUP.Party.Location.CountryName;
                         partyJObject.Add("Location", locationString);
                         string hostString = singleUP.Party.Host.UserName + " " + singleUP.Party.Host.Email;
