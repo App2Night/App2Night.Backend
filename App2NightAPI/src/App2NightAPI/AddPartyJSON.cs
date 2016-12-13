@@ -187,7 +187,7 @@ namespace App2NightAPI
             JArray userArray = new JArray();
             //Select all commitet user to the given party id
             var commitetUser = _dbContext.UserPartyItems
-                .Where(up => up.PartyId == partyId && up.EventCommitment == Models.Enum.EventCommitmentState.Accepted)
+                .Where(up => up.PartyId == partyId && (up.EventCommitment == Models.Enum.EventCommitmentState.Accepted || up.EventCommitment == EventCommitmentState.Noted))
                 .Select(u => new { u.User })
                 .ToList();
 
