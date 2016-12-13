@@ -28,8 +28,8 @@ namespace UserServer
                      {
                         new Secret(new Secrets().APISecret.Sha256())
                      },
-                }
-                //StandardScopes.Profile
+                },
+                StandardScopes.Profile
             };
         }
 
@@ -56,8 +56,8 @@ namespace UserServer
                         "App2NightAPI",
                         StandardScopes.OfflineAccess.Name,
                         StandardScopes.OpenId.Name,
-                        StandardScopes.Email.Name
-                        //StandardScopes.Profile.Name
+                        StandardScopes.Email.Name,
+                        StandardScopes.Profile.Name
                     },
 
                 }
