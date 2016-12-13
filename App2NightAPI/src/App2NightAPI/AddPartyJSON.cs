@@ -149,7 +149,7 @@ namespace App2NightAPI
                     //Add calculated values to json
                     party.Add("GeneralUpVoting", generalUp);
                     party.Add("GeneralDownVoting", generalDown);
-                    party.Add("PriceUpVotring", priceUp);
+                    party.Add("PriceUpVoting", priceUp);
                     party.Add("PriceDownVoting", priceDown);
                     party.Add("LocationUpVoting", locationUp);
                     party.Add("LocationDownVoting", locationDown);
