@@ -193,7 +193,7 @@ namespace App2NightAPI.Controllers
                     return BadRequest(new CreateParty());
                 }
                 //Check if Party Date is today or in future
-                else if (value.PartyDate.Date <= DateTime.Today)
+                else if (value.PartyDate.Date < DateTime.Today)
                 {
                     //Party Date is the past
                     return BadRequest("Party date can't be in the past.");
@@ -256,7 +256,7 @@ namespace App2NightAPI.Controllers
                         return Unauthorized();
                     }
                     //Check if Party Date is toady or in future
-                    else if (value.PartyDate.Date <= DateTime.Today)
+                    else if (value.PartyDate.Date < DateTime.Today)
                     {
                         //Party Date is not today or in future
                         return BadRequest("Party has to be in the future.");
