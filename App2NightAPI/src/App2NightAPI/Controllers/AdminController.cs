@@ -59,6 +59,10 @@ namespace App2NightAPI.Controllers
                     //Location + Host not as array
                     JObject tempJobject = new JObject();
                     tempJobject = new AddPartyJSON(_dbContext, User).AddCustomJsonForAdmin(singleParty);
+                    tempJobject.Remove("MusicGenre");
+                    tempJobject.Add("MusicGenre", singleParty.MusicGenre.ToString());
+                    tempJobject.Remove("PartyType");
+                    tempJobject.Add("PartyType", singleParty.PartyType.ToString());
                     tempJobject.Remove("CommittedUser");
                     tempJobject.Remove("Location");
                     tempJobject.Remove("Host");
