@@ -38,14 +38,28 @@ namespace App2NightAPI.Controllers
         /// </summary>
         /// <returns>Functions returns all parties with location and host.</returns>
         [HttpGet("GetPartys")]
-        public ActionResult GetPartys()
+        public ActionResult GetPartys(Boolean loadAll = false)
         {
             List<JObject> jsonList = new List<JObject>();
+            List<Party> partys;
 
-            //Select all parties for admin client
-            var partys = _dbContext.PartyItems
-                .Include(p => p.Location)
-                .Include(p => p.Host).ToList();
+            if (!loadAll)
+            {
+                //Select parties in future
+                partys = _dbContext.PartyItems
+                    .Where(p => p.PartyDate.Date >= DateTime.Today)
+                    .Include(p => p.Location)
+                    .Include(p => p.Host)
+                    .ToList();
+            }
+            else
+            {
+                //Select all parties
+                 partys = _dbContext.PartyItems
+                    .Include(p => p.Location)
+                    .Include(p => p.Host)
+                    .ToList();
+            }
 
             if (partys == null)
             {

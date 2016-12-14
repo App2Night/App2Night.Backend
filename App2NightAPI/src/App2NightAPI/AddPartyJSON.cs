@@ -196,6 +196,7 @@ namespace App2NightAPI
                 //Add all selected users to an array with UserId and UserName
                 foreach (var up in commitetUser)
                 {
+
                     var user = new JObject
                     {
                         {
@@ -205,6 +206,18 @@ namespace App2NightAPI
                             "UserName", up.User.UserName
                         }
                     };
+
+                    //Check Users CommittmentState
+                    var userCommitment = _dbContext.UserPartyItems
+                        .FirstOrDefault(p => p.PartyId == partyId && p.UserId == up.User.UserId);
+                    if(userCommitment != null)
+                    {
+                        user.Add("UserCommitmentState", GetValueFromEventCommitmentstate(userCommitment.EventCommitment));
+                    }
+                    else
+                    {
+                        user.Add("UserCommitmentState", GetValueFromEventCommitmentstate(EventCommitmentState.Rejected));
+                    }
                     userArray.Add(user);
                 }
             }
